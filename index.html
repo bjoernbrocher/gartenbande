@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#7fc66f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Gartenbande">
+  <meta name="description" content="Gartenbande Hemmingen: digitaler Dorfplatz fuer Momente, Pflanzentausch, Hilfe, Info und Termine.">
+  <title>Gartenbande Hemmingen</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="avatar-button" data-view-target="profileView" aria-label="Profil oeffnen">
+        <span id="avatarInitials">GB</span>
+      </button>
+      <div>
+        <p class="microcopy">Dorfplatz Hemmingen</p>
+        <h1>Gartenbande</h1>
+      </div>
+      <button class="season-switch" id="seasonSwitch" type="button" aria-label="Jahreszeit wechseln">
+        <span id="seasonIcon">Fr</span>
+      </button>
+    </header>
+
+    <main>
+      <section class="view active" id="homeView" aria-label="Dorfplatz">
+        <section class="home-intro" id="homeIntro">
+          <div class="intro-topline">
+            <p>So funktioniert's</p>
+            <button class="small-action" id="hideIntro" type="button">OK</button>
+          </div>
+          <div class="intro-strip" id="homeIntroStrip"></div>
+        </section>
+
+        <section class="alert-strip" id="alertStrip"></section>
+
+        <section class="golden-help">
+          <div>
+            <p>Direkt fragen</p>
+            <h2>Wer kann helfen?</h2>
+            <span>Brauchst du etwas? Ein Satz reicht.</span>
+          </div>
+          <button class="small-action" id="quickHelp" type="button">Fragen</button>
+        </section>
+
+        <section class="moment-card" id="momentCard"></section>
+
+        <section class="wanted-card" id="wantedCard"></section>
+
+        <section class="tile-grid" id="moduleTiles"></section>
+      </section>
+
+      <section class="view" id="moreView" aria-label="Mehr">
+        <div class="section-heading">
+          <p>Mehr</p>
+          <h2>Alles Weitere</h2>
+        </div>
+        <section class="intro-strip" id="introStrip"></section>
+        <section class="feed-card">
+          <div class="section-heading compact">
+            <p>Dorffunk</p>
+            <h2>Neu auf dem Brett</h2>
+          </div>
+          <div class="mini-feed" id="miniFeed"></div>
+        </section>
+        <section class="district-card">
+          <div class="section-heading compact">
+            <p>Nachbarschaftskarte</p>
+            <h2>Neues aus deinem Ortsteil</h2>
+          </div>
+          <div class="district-list" id="districtList"></div>
+        </section>
+        <section class="challenge-card monthly">
+          <div>
+            <p>Challenge des Monats</p>
+            <h2 id="monthlyTitle">Sonnenblume</h2>
+            <span id="monthlyText">Eine Challenge, nicht jede Woche.</span>
+          </div>
+          <button class="small-action" data-create-kind="moment" type="button">Mitmachen</button>
+        </section>
+        <section class="pwa-card">
+          <div>
+            <p>App-Status</p>
+            <strong id="pwaStatus">Offline-Speicher aktiv</strong>
+            <span id="installHint">Auf iPhone: Teilen > Zum Home-Bildschirm.</span>
+          </div>
+          <button class="small-action hidden" id="installButton" type="button">Installieren</button>
+        </section>
+      </section>
+
+      <section class="view" id="moduleView" aria-label="Bereich">
+        <div class="section-heading">
+          <p id="moduleEyebrow">Bereich</p>
+          <h2 id="moduleTitle">Der Moment</h2>
+        </div>
+        <button class="primary-action" id="moduleCreate" type="button">Neuen Eintrag erstellen</button>
+        <div class="entry-list" id="entryList"></div>
+      </section>
+
+      <section class="view" id="albumView" aria-label="Sammelalbum">
+        <div class="section-heading">
+          <p>Sammelalbum</p>
+          <h2>Dein Gartenjahr</h2>
+        </div>
+        <div class="album-hero" id="albumHero"></div>
+        <div class="badge-row" id="badgeRow"></div>
+        <div class="entry-list" id="myEntries"></div>
+      </section>
+
+      <section class="view" id="profileView" aria-label="Profil">
+        <div class="section-heading">
+          <p>Profil</p>
+          <h2>Willkommen in der Bande</h2>
+        </div>
+        <section class="auth-card">
+          <p>Anmeldung</p>
+          <strong id="authStatus">Lokaler Beta-Modus</strong>
+          <form id="authForm">
+            <label>
+              E-Mail
+              <input name="email" type="email" autocomplete="email" placeholder="dein.name@example.de" required>
+            </label>
+            <button class="primary-action" type="submit">Anmeldelink senden</button>
+          </form>
+          <button class="small-action hidden" id="signOutButton" type="button">Abmelden</button>
+        </section>
+        <form class="profile-form" id="profileForm">
+          <label>
+            Name
+            <input name="name" autocomplete="name" required>
+          </label>
+          <label>
+            E-Mail fuer diese Beta
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label>
+            Spitzname
+            <input name="nickname">
+          </label>
+          <label>
+            Ortsteil
+            <select name="district">
+              <option>Hemmingen-Westerfeld</option>
+              <option>Hiddestorf</option>
+              <option>Arnum</option>
+              <option>Devese</option>
+              <option>Wilkenburg</option>
+              <option>Harkenbleck</option>
+              <option>Ohlendorf</option>
+            </select>
+          </label>
+          <label class="rules-check">
+            <input name="rulesAccepted" type="checkbox" required>
+            <span>Ich teile freundlich: lokal, hilfreich, ohne Streit, ohne oeffentliche Beschuldigungen.</span>
+          </label>
+          <button class="primary-action" type="submit">Profil speichern</button>
+          <button class="small-action" id="adminButton" data-view-target="adminView" type="button">Adminbereich</button>
+          <button class="small-action" id="resetDemo" type="button">Demo zuruecksetzen</button>
+        </form>
+      </section>
+
+      <section class="view" id="adminView" aria-label="Adminbereich">
+        <div class="section-heading">
+          <p>Admin</p>
+          <h2>Kleines Dashboard</h2>
+        </div>
+        <div class="admin-dashboard" id="adminDashboard"></div>
+        <div class="admin-panel">
+          <h3>Freigaben</h3>
+          <p>Nur Warnungen und Vermisstmeldungen brauchen Freigabe.</p>
+          <div class="entry-list" id="moderationList"></div>
+        </div>
+        <div class="admin-panel">
+          <h3>Monatschallenge</h3>
+          <form class="profile-form" id="challengeForm">
+            <label>
+              Titel
+              <input name="title" placeholder="z.B. Erste Bluete" required>
+            </label>
+            <div class="form-grid">
+              <label>
+                Startdatum
+                <input name="startDate" type="date" required>
+              </label>
+              <label>
+                Enddatum
+                <input name="endDate" type="date" required>
+              </label>
+            </div>
+            <label>
+              Bildnotiz
+              <input name="image" placeholder="z.B. Sonnenblume">
+            </label>
+            <button class="primary-action" type="submit">Challenge setzen</button>
+          </form>
+        </div>
+        <div class="admin-panel">
+          <h3>Nutzer</h3>
+          <div class="admin-users" id="adminUsers"></div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-camera" id="quickMoment" type="button" aria-label="Moment teilen">+</button>
+
+    <nav class="bottom-nav" aria-label="Hauptnavigation">
+      <button class="nav-item active" data-view="homeView" type="button"><span>DP</span>Dorfplatz</button>
+      <button class="nav-item" data-kind="moment" type="button"><span>MO</span>Moment</button>
+      <button class="nav-item" data-kind="plants" type="button"><span>PT</span>Tausch</button>
+      <button class="nav-item" data-view="moreView" type="button"><span>ME</span>Mehr</button>
+      <button class="nav-item" data-view="profileView" type="button"><span>PR</span>Profil</button>
+    </nav>
+  </div>
+
+  <dialog class="entry-dialog" id="entryDialog">
+    <form method="dialog" class="entry-card" id="entryForm">
+      <button class="close-dialog" value="cancel" type="submit" aria-label="Schliessen">x</button>
+      <p id="dialogEyebrow">Neuer Eintrag</p>
+      <h2 id="dialogTitle">Der Moment</h2>
+      <input type="hidden" name="kind" id="entryKind">
+
+      <label class="photo-drop" id="photoDrop">
+        <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment">
+        <img id="photoPreview" alt="">
+        <span id="photoDropText">Foto aufnehmen oder auswaehlen</span>
+      </label>
+
+      <label>
+        Ein Satz
+        <textarea name="text" maxlength="180" placeholder="Was moechtest du teilen?" required></textarea>
+      </label>
+
+      <div class="form-grid">
+        <label>
+          Typ
+          <select name="type" id="entryType"></select>
+        </label>
+        <label>
+          Ortsteil
+          <select name="district" id="entryDistrict">
+            <option>Hemmingen-Westerfeld</option>
+            <option>Hiddestorf</option>
+            <option>Arnum</option>
+            <option>Devese</option>
+            <option>Wilkenburg</option>
+            <option>Harkenbleck</option>
+            <option>Ohlendorf</option>
+          </select>
+        </label>
+      </div>
+
+      <label id="contactLabel">
+        Kontakt oder kurzer Hinweis
+        <input name="contact" placeholder="z.B. Ich habe einen / PN / heute Abend">
+      </label>
+
+      <button class="primary-action" value="default" type="submit">Auf den Dorfplatz setzen</button>
+    </form>
+  </dialog>
+
+  <dialog class="entry-dialog" id="helpDialog">
+    <form method="dialog" class="entry-card" id="helpForm">
+      <button class="close-dialog" value="cancel" type="submit" aria-label="Schliessen">x</button>
+      <p>Wer kann helfen?</p>
+      <h2>Ein Satz reicht</h2>
+      <label>
+        Was brauchst du?
+        <textarea name="text" maxlength="180" placeholder="Brauche Samstag einen Haecksler." required></textarea>
+      </label>
+      <label>
+        Ortsteil
+        <select name="district" id="helpDistrict">
+          <option>Hemmingen-Westerfeld</option>
+          <option>Hiddestorf</option>
+          <option>Arnum</option>
+          <option>Devese</option>
+          <option>Wilkenburg</option>
+          <option>Harkenbleck</option>
+          <option>Ohlendorf</option>
+        </select>
+      </label>
+      <button class="primary-action" value="default" type="submit">Einordnen und senden</button>
+    </form>
+  </dialog>
+
+  <template id="emptyTemplate">
+    <div class="empty-state">
+      <strong>Noch leer.</strong>
+      <p>Der erste Eintrag wartet schon.</p>
+    </div>
+  </template>
+
+  <script src="app.js?v=supabase1"></script>
+</body>
+</html>

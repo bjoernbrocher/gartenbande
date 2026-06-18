@@ -65,7 +65,7 @@ const modules = [
     title: "Nachbarschaftshilfe",
     short: "Blumen giessen, Baumarkt, Tragen.",
     color: "#ffb47b",
-    visibleAtStart: false,
+    visibleAtStart: true,
     types: ["Ich brauche Hilfe", "Ich kann helfen"]
   },
   {
@@ -95,6 +95,93 @@ const modules = [
     color: "#ff8daf",
     visibleAtStart: false,
     types: ["Monatschallenge"]
+  }
+];
+
+const gardenPlaces = [
+  {
+    kind: "moment",
+    code: "MB",
+    place: "Momentebeet",
+    hint: "Kleine Augenblicke aus Hemmingen",
+    x: 26,
+    y: 62,
+    size: "large"
+  },
+  {
+    kind: "plants",
+    code: "TT",
+    place: "Tauschtisch",
+    hint: "Ableger, Samen und Pflanzen",
+    x: 62,
+    y: 64,
+    size: "large"
+  },
+  {
+    kind: "info",
+    code: "GT",
+    place: "Aushang am Tor",
+    hint: "Wichtiges und Vermisstes",
+    x: 68,
+    y: 31,
+    size: "large",
+    alert: true
+  },
+  {
+    kind: "help",
+    code: "HB",
+    place: "Helferbank",
+    hint: "Eine kurze Bitte reicht",
+    x: 30,
+    y: 41,
+    size: "medium"
+  },
+  {
+    kind: "lend",
+    code: "GS",
+    place: "Geraeteschuppen",
+    hint: "Werkzeug suchen oder anbieten",
+    x: 22,
+    y: 23,
+    size: "medium"
+  },
+  {
+    kind: "events",
+    code: "PG",
+    place: "Pergola-Treff",
+    hint: "Termine und kleine Treffen",
+    x: 76,
+    y: 51,
+    size: "medium"
+  },
+  {
+    kind: "challenge",
+    code: "MBL",
+    place: "Monatsbluete",
+    hint: "Die ruhige Monatsidee",
+    x: 43,
+    y: 47,
+    size: "small"
+  },
+  {
+    view: "albumView",
+    code: "GR",
+    place: "Gartenjahr-Regal",
+    hint: "Sammelalbum und Abzeichen",
+    x: 40,
+    y: 82,
+    size: "small",
+    locked: true
+  },
+  {
+    view: "moreView",
+    code: "VH",
+    place: "Vogelhaus",
+    hint: "Dorffunk und Ortsteile",
+    x: 74,
+    y: 82,
+    size: "small",
+    locked: true
   }
 ];
 
@@ -586,7 +673,6 @@ function renderSeason() {
 }
 
 function renderHome() {
-  const visible = visibleModules();
   const infoCount = state.entries.filter((entry) => entry.kind === "info").length;
 
   const latestInfo = state.entries.find((entry) => entry.kind === "info");
@@ -598,13 +684,20 @@ function renderHome() {
     els.alertStrip.innerHTML = `<p>Nachbarschaftsinfo</p><strong>Keine aktuelle Warnung oder Vermisstmeldung.</strong>`;
   }
 
-  els.moduleTiles.innerHTML = visible.map((module) => `
-    <button class="module-tile ${module.alert ? "alert-tile" : ""}" style="--tile-color:${module.color}" data-kind="${module.kind}" type="button">
-      <span>${module.code}</span>
-      <strong>${escapeHtml(module.title)}</strong>
-      <small>${escapeHtml(module.short)} ${module.kind === "info" ? `· ${infoCount}` : ""}</small>
-    </button>
-  `).join("");
+  els.moduleTiles.innerHTML = gardenPlaces.map((place) => {
+    const module = place.kind ? getModule(place.kind) : null;
+    const locked = Boolean(place.locked || (module && !module.visibleAtStart && !state.unlocked));
+    const style = `--garden-x:${place.x}%;--garden-y:${place.y}%;--place-color:${module?.color || "#f3c467"}`;
+    const actionAttr = place.kind ? `data-kind="${place.kind}"` : `data-view="${place.view}"`;
+    const countText = place.kind === "info" && infoCount ? ` · ${infoCount}` : "";
+    return `
+      <button class="garden-place ${place.size || "medium"} ${locked ? "locked" : ""} ${place.alert ? "urgent" : ""}" style="${style}" ${actionAttr} data-locked="${locked}" type="button">
+        <span>${escapeHtml(place.code)}</span>
+        <strong>${escapeHtml(place.place)}</strong>
+        <small>${escapeHtml(place.hint)}${countText}</small>
+      </button>
+    `;
+  }).join("");
 
   const [title, text] = monthlyChallenge();
   els.monthlyTitle.textContent = title;
@@ -617,6 +710,7 @@ function renderHome() {
 }
 
 function renderMomentCard() {
+  if (!els.momentCard) return;
   const moment = state.entries.find((entry) => entry.kind === "moment");
   els.momentCard.innerHTML = moment ? `
     <p>Moment des Tages</p>
@@ -642,6 +736,7 @@ function wantedEntries() {
 }
 
 function renderWanted() {
+  if (!els.wantedCard) return;
   const wanted = wantedEntries().slice(0, 3);
   els.wantedCard.innerHTML = `
     <p>Aktuell gesucht</p>
@@ -665,7 +760,7 @@ function renderIntro() {
   `;
   if (els.introStrip) els.introStrip.innerHTML = introHtml;
   if (els.homeIntroStrip) els.homeIntroStrip.innerHTML = introHtml;
-  if (els.homeIntro) els.homeIntro.classList.toggle("hidden", Boolean(state.introHidden));
+  if (els.homeIntro) els.homeIntro.classList.add("hidden");
 }
 
 function renderMiniFeed() {
@@ -807,7 +902,7 @@ function showView(viewId) {
     const active = item.dataset.view === viewId || (viewId === "moduleView" && item.dataset.kind === state.activeKind);
     item.classList.toggle("active", active);
   });
-  els.quickMoment.classList.toggle("hidden", ["profileView"].includes(viewId));
+  els.quickMoment.classList.toggle("hidden", ["homeView", "profileView"].includes(viewId));
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -905,8 +1000,14 @@ document.querySelectorAll("[data-view-target]").forEach((button) => {
 });
 
 els.moduleTiles.addEventListener("click", (event) => {
-  const tile = event.target.closest("[data-kind]");
-  if (tile) openModule(tile.dataset.kind);
+  const tile = event.target.closest(".garden-place");
+  if (!tile) return;
+  if (tile.dataset.locked === "true") {
+    showToast("Dieser Gartenort ist noch nicht entdeckt.");
+    return;
+  }
+  if (tile.dataset.kind) openModule(tile.dataset.kind);
+  if (tile.dataset.view) showView(tile.dataset.view);
 });
 
 document.body.addEventListener("click", async (event) => {

@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=garden2">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -35,7 +35,7 @@
 
     <main>
       <section class="view active" id="homeView" aria-label="Dorfplatz">
-        <section class="home-intro" id="homeIntro">
+        <section class="home-intro hidden" id="homeIntro">
           <div class="intro-topline">
             <p>So funktioniert's</p>
             <button class="small-action" id="hideIntro" type="button">OK</button>
@@ -43,22 +43,18 @@
           <div class="intro-strip" id="homeIntroStrip"></div>
         </section>
 
-        <section class="alert-strip" id="alertStrip"></section>
-
-        <section class="golden-help">
-          <div>
-            <p>Direkt fragen</p>
-            <h2>Wer kann helfen?</h2>
-            <span>Brauchst du etwas? Ein Satz reicht.</span>
+        <section class="garden-stage" aria-label="Gartenkarte">
+          <div class="garden-sky">
+            <p>Gartenbande Hemmingen</p>
+            <h2>Der Garten</h2>
           </div>
-          <button class="small-action" id="quickHelp" type="button">Fragen</button>
+          <section class="alert-strip garden-alert" id="alertStrip"></section>
+          <section class="garden-map" id="moduleTiles"></section>
+          <button class="garden-question" id="quickHelp" type="button">
+            <span>?</span>
+            Wer kann helfen?
+          </button>
         </section>
-
-        <section class="moment-card" id="momentCard"></section>
-
-        <section class="wanted-card" id="wantedCard"></section>
-
-        <section class="tile-grid" id="moduleTiles"></section>
       </section>
 
       <section class="view" id="moreView" aria-label="Mehr">
@@ -212,7 +208,7 @@
       </section>
     </main>
 
-    <button class="floating-camera" id="quickMoment" type="button" aria-label="Moment teilen">+</button>
+    <button class="floating-camera hidden" id="quickMoment" type="button" aria-label="Moment teilen">+</button>
 
     <nav class="bottom-nav" aria-label="Hauptnavigation">
       <button class="nav-item active" data-view="homeView" type="button"><span>DP</span>Dorfplatz</button>
@@ -301,6 +297,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=supabase1"></script>
+  <script src="app.js?v=garden2"></script>
 </body>
 </html>

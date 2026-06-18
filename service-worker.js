@@ -1,9 +1,9 @@
-const CACHE_NAME = "gartenbande-pwa-v8";
+const CACHE_NAME = "gartenbande-pwa-v10";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css",
-  "./app.js?v=supabase1",
+  "./style.css?v=garden2",
+  "./app.js?v=garden2",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

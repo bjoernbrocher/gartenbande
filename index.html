@@ -15,13 +15,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=garden2">
+  <link rel="stylesheet" href="style.css?v=account1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="avatar-button" data-view-target="profileView" aria-label="Profil oeffnen">
+      <button class="avatar-button" data-view-target="profileView" aria-label="Mein Garten oeffnen">
         <span id="avatarInitials">GB</span>
       </button>
       <div>
@@ -114,9 +114,9 @@
         <div class="entry-list" id="myEntries"></div>
       </section>
 
-      <section class="view" id="profileView" aria-label="Profil">
+      <section class="view" id="profileView" aria-label="Mein Garten">
         <div class="section-heading">
-          <p>Profil</p>
+          <p>Mein Garten</p>
           <h2>Willkommen in der Bande</h2>
         </div>
         <section class="auth-card">
@@ -131,14 +131,14 @@
           </form>
           <button class="small-action hidden" id="signOutButton" type="button">Abmelden</button>
         </section>
-        <form class="profile-form" id="profileForm">
+        <form class="profile-form hidden" id="profileForm">
+          <div class="form-note">
+            <p>Gartenprofil</p>
+            <strong>So erscheinst du auf dem Brett.</strong>
+          </div>
           <label>
             Name
             <input name="name" autocomplete="name" required>
-          </label>
-          <label>
-            E-Mail fuer diese Beta
-            <input name="email" type="email" autocomplete="email" required>
           </label>
           <label>
             Spitzname
@@ -160,15 +160,15 @@
             <input name="rulesAccepted" type="checkbox" required>
             <span>Ich teile freundlich: lokal, hilfreich, ohne Streit, ohne oeffentliche Beschuldigungen.</span>
           </label>
-          <button class="primary-action" type="submit">Profil speichern</button>
-          <button class="small-action" id="adminButton" data-view-target="adminView" type="button">Adminbereich</button>
-          <button class="small-action" id="resetDemo" type="button">Demo zuruecksetzen</button>
+          <button class="primary-action" type="submit">Gartenprofil speichern</button>
+          <button class="small-action hidden" id="adminButton" data-view-target="adminView" type="button">Gaertnerraum</button>
+          <button class="small-action hidden" id="resetDemo" type="button">Demo zuruecksetzen</button>
         </form>
       </section>
 
-      <section class="view" id="adminView" aria-label="Adminbereich">
+      <section class="view" id="adminView" aria-label="Gaertnerraum">
         <div class="section-heading">
-          <p>Admin</p>
+          <p>Gaertnerraum</p>
           <h2>Kleines Dashboard</h2>
         </div>
         <div class="admin-dashboard" id="adminDashboard"></div>
@@ -215,7 +215,7 @@
       <button class="nav-item" data-kind="moment" type="button"><span>MO</span>Moment</button>
       <button class="nav-item" data-kind="plants" type="button"><span>PT</span>Tausch</button>
       <button class="nav-item" data-view="moreView" type="button"><span>ME</span>Mehr</button>
-      <button class="nav-item" data-view="profileView" type="button"><span>PR</span>Profil</button>
+      <button class="nav-item" data-view="profileView" type="button"><span>ICH</span>Ich</button>
     </nav>
   </div>
 
@@ -297,6 +297,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=garden2"></script>
+  <script src="app.js?v=account1"></script>
 </body>
 </html>

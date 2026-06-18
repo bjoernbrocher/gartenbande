@@ -959,6 +959,26 @@ h2 {
   gap: 10px;
 }
 
+.form-note {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: rgba(127, 198, 111, 0.13);
+}
+
+.form-note p {
+  margin: 0;
+  color: var(--rust);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.form-note strong {
+  font-size: 1rem;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

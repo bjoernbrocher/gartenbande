@@ -461,6 +461,10 @@ async function applySession(session) {
 
 function renderAuthStatus(message = "") {
   if (!els.authStatus || !els.authForm || !els.signOutButton) return;
+  const showLocalProfile = !supabaseClient;
+  els.profileForm?.classList.toggle("hidden", !showLocalProfile && !supabaseUser);
+  els.resetDemo?.classList.toggle("hidden", Boolean(supabaseClient));
+  els.adminButton?.classList.toggle("hidden", !profile.isAdmin);
   if (!supabaseClient) {
     els.authStatus.textContent = message || "Lokaler Beta-Modus. Supabase SDK nicht geladen.";
     els.authForm.classList.remove("hidden");
@@ -657,11 +661,12 @@ function render() {
 function renderProfile() {
   els.avatarInitials.textContent = initials(profile.nickname || profile.name);
   els.profileForm.name.value = profile.name || "";
-  els.profileForm.email.value = profile.email || "";
   els.profileForm.nickname.value = profile.nickname || "";
   els.profileForm.district.value = profile.district || "Hemmingen-Westerfeld";
   els.profileForm.rulesAccepted.checked = Boolean(profile.rulesAccepted);
-  if (els.adminButton) els.adminButton.classList.toggle("hidden", remoteReady && !profile.isAdmin);
+  els.profileForm.classList.toggle("hidden", Boolean(supabaseClient && !supabaseUser));
+  if (els.adminButton) els.adminButton.classList.toggle("hidden", !profile.isAdmin);
+  if (els.resetDemo) els.resetDemo.classList.toggle("hidden", Boolean(supabaseClient));
 }
 
 function renderSeason() {
@@ -897,6 +902,10 @@ function renderPwaStatus() {
 }
 
 function showView(viewId) {
+  if (viewId === "adminView" && !profile.isAdmin) {
+    showToast("Der Gaertnerraum ist nur fuer Admins sichtbar.");
+    viewId = "homeView";
+  }
   document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === viewId));
   document.querySelectorAll(".nav-item").forEach((item) => {
     const active = item.dataset.view === viewId || (viewId === "moduleView" && item.dataset.kind === state.activeKind);
@@ -916,7 +925,7 @@ function openModule(kind) {
 function openEntryDialog(kind) {
   if (requireLogin()) return;
   if (!profile.rulesAccepted) {
-    showToast("Bitte zuerst Profil und Regeln bestaetigen.");
+    showToast("Bitte zuerst deinen Garten einrichten.");
     showView("profileView");
     return;
   }
@@ -1166,7 +1175,7 @@ els.profileForm.addEventListener("submit", async (event) => {
   profile = {
     ...profile,
     name: String(formData.get("name") || "").trim(),
-    email: String(formData.get("email") || "").trim(),
+    email: supabaseUser?.email || profile.email || "",
     nickname: String(formData.get("nickname") || "").trim(),
     district: String(formData.get("district") || ""),
     rulesAccepted: formData.get("rulesAccepted") === "on"
@@ -1175,7 +1184,7 @@ els.profileForm.addEventListener("submit", async (event) => {
   await ensureRemoteProfile();
   render();
   showView("homeView");
-  showToast("Profil gespeichert.");
+  showToast("Gartenprofil gespeichert.");
 });
 
 els.authForm?.addEventListener("submit", async (event) => {

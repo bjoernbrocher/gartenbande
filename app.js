@@ -312,20 +312,8 @@ const defaultState = {
   activeKind: "moment",
   unlocked: false,
   introHidden: false,
-  members: {
-    "Hemmingen-Westerfeld": 18,
-    Hiddestorf: 12,
-    Arnum: 21,
-    Devese: 9,
-    Wilkenburg: 8,
-    Harkenbleck: 7,
-    Ohlendorf: 8
-  },
-  users: [
-    { name: "Mira Gartenfreund", district: "Hiddestorf", status: "aktiv" },
-    { name: "Jens", district: "Arnum", status: "aktiv" },
-    { name: "Nele", district: "Wilkenburg", status: "aktiv" }
-  ],
+  members: {},
+  users: [],
   customChallenge: null,
   entries: [
     {
@@ -469,13 +457,24 @@ function normalizeState(stored) {
   return {
     ...structuredClone(defaultState),
     ...stored,
-    members: { ...defaultState.members, ...(stored.members || {}) },
-    users: stored.users || defaultState.users,
+    members: cleanMemberCounts(stored.members),
+    users: cleanUsers(stored.users),
     entries: stored.entries.map((entry) => ({
       approved: entry.kind !== "info",
       ...entry
     }))
   };
+}
+
+function cleanUsers(users = []) {
+  const demoNames = new Set(["Mira Gartenfreund", "Jens", "Nele"]);
+  return (users || []).filter((user) => user?.id || !demoNames.has(user?.name));
+}
+
+function cleanMemberCounts(members = {}) {
+  const counts = {};
+  for (const district of districts) counts[district] = 0;
+  return counts;
 }
 
 function loadProfile() {
@@ -573,6 +572,7 @@ async function applySession(session) {
 
   await ensureRemoteProfile();
   await loadRemoteEntries();
+  await loadRemoteProfiles();
   render();
 }
 
@@ -667,6 +667,52 @@ async function loadRemoteEntries() {
   }
 }
 
+async function loadRemoteProfiles() {
+  if (!remoteReady || !profile.isAdmin) {
+    state.users = cleanUsers(state.users);
+    state.members = memberCountsFromUsers(state.users);
+    saveState();
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("id,email,name,nickname,district,status,is_admin,created_at")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    state.users = (data || []).map(profileUserFromRemote);
+    state.members = memberCountsFromUsers(state.users);
+    saveState();
+  } catch (error) {
+    reportRemoteIssue(error);
+    state.users = cleanUsers(state.users);
+    state.members = memberCountsFromUsers(state.users);
+    saveState();
+  }
+}
+
+function profileUserFromRemote(row) {
+  return {
+    id: row.id,
+    email: row.email || "",
+    name: row.nickname || row.name || row.email || "Nachbar",
+    district: row.district || "Hemmingen-Westerfeld",
+    status: row.status || "aktiv",
+    isAdmin: Boolean(row.is_admin)
+  };
+}
+
+function memberCountsFromUsers(users = []) {
+  const counts = {};
+  for (const district of districts) counts[district] = 0;
+  for (const user of cleanUsers(users)) {
+    const district = user.district || "Hemmingen-Westerfeld";
+    counts[district] = (counts[district] || 0) + 1;
+  }
+  return counts;
+}
+
 function entryToRemote(entry) {
   return {
     id: entry.id,
@@ -713,6 +759,12 @@ async function saveRemoteEntry(entry) {
 async function updateRemoteEntry(id, values) {
   if (!remoteReady) return;
   const { error } = await supabaseClient.from("entries").update(values).eq("id", id);
+  if (error) throw error;
+}
+
+async function updateRemoteProfileStatus(id, status) {
+  if (!remoteReady || !profile.isAdmin) return;
+  const { error } = await supabaseClient.from("profiles").update({ status }).eq("id", id);
   if (error) throw error;
 }
 
@@ -859,7 +911,7 @@ function render() {
   renderHome();
   renderModule();
   renderAlbum();
-  renderAdmin();
+  renderAdminClean();
   renderPwaStatus();
 }
 
@@ -1112,8 +1164,9 @@ function renderAlbum() {
 
 function renderAdmin() {
   const infoOpen = state.entries.filter((entry) => entry.kind === "info" && !entry.approved);
+  const users = cleanUsers(state.users);
   els.adminDashboard.innerHTML = `
-    <div class="admin-stat"><strong>${Object.values(state.members || {}).reduce((sum, value) => sum + value, 0)}</strong><span>Mitglieder</span></div>
+    <div class="admin-stat"><strong>${users.length}</strong><span>Mitglieder</span></div>
     <div class="admin-stat"><strong>${entriesSince(24).length}</strong><span>neue Beitraege</span></div>
     <div class="admin-stat"><strong>${infoOpen.length}</strong><span>Freigaben</span></div>
     <div class="admin-stat"><strong>${wantedEntries().length}</strong><span>offene Suchen</span></div>
@@ -1134,6 +1187,43 @@ function renderAdmin() {
       <button class="small-action" data-toggle-user="${index}" type="button">${user.status === "aktiv" ? "Sperren" : "Aktivieren"}</button>
     </div>
   `).join("");
+  if (state.customChallenge?.title) {
+    els.challengeForm.title.value = state.customChallenge.title;
+    els.challengeForm.startDate.value = state.customChallenge.startDate || "";
+    els.challengeForm.endDate.value = state.customChallenge.endDate || "";
+    els.challengeForm.image.value = state.customChallenge.image || "";
+  }
+}
+
+function renderAdminClean() {
+  const infoOpen = state.entries.filter((entry) => entry.kind === "info" && !entry.approved);
+  const users = cleanUsers(state.users);
+
+  els.adminDashboard.innerHTML = `
+    <div class="admin-stat"><strong>${users.length}</strong><span>Mitglieder</span></div>
+    <div class="admin-stat"><strong>${entriesSince(24).length}</strong><span>neue Beitraege</span></div>
+    <div class="admin-stat"><strong>${infoOpen.length}</strong><span>Freigaben</span></div>
+    <div class="admin-stat"><strong>${wantedEntries().length}</strong><span>offene Suchen</span></div>
+  `;
+
+  els.moderationList.innerHTML = infoOpen.length ? infoOpen.map((entry) => `
+    <article class="entry-item">
+      <div class="entry-body">
+        <div class="entry-meta"><span class="pill">${escapeHtml(entry.type)}</span><span class="pill">${escapeHtml(entry.district)}</span></div>
+        <p>${escapeHtml(entry.text)}</p>
+        <button class="small-action" data-approve-entry="${entry.id}" type="button">Freigeben</button>
+      </div>
+    </article>
+  `).join("") : document.querySelector("#emptyTemplate").innerHTML;
+
+  els.adminUsers.innerHTML = users.length ? users.map((user) => `
+    <div class="admin-user">
+      <strong>${escapeHtml(user.name)}</strong>
+      <span>${escapeHtml(user.district)} · ${escapeHtml(user.status)}${user.isAdmin ? " · Admin" : ""}</span>
+      <button class="small-action" data-toggle-user="${escapeHtml(user.id)}" type="button">${user.status === "aktiv" ? "Sperren" : "Aktivieren"}</button>
+    </div>
+  `).join("") : document.querySelector("#emptyTemplate").innerHTML;
+
   if (state.customChallenge?.title) {
     els.challengeForm.title.value = state.customChallenge.title;
     els.challengeForm.startDate.value = state.customChallenge.startDate || "";
@@ -1310,10 +1400,20 @@ document.body.addEventListener("click", async (event) => {
     }
   }
   if (toggleUser) {
-    const user = state.users[Number(toggleUser.dataset.toggleUser)];
-    if (user) user.status = user.status === "aktiv" ? "gesperrt" : "aktiv";
-    saveState();
-    render();
+    const user = cleanUsers(state.users).find((item) => item.id === toggleUser.dataset.toggleUser);
+    if (!user) return;
+    const nextStatus = user.status === "aktiv" ? "gesperrt" : "aktiv";
+    try {
+      await updateRemoteProfileStatus(user.id, nextStatus);
+      user.status = nextStatus;
+      state.users = cleanUsers(state.users).map((item) => item.id === user.id ? { ...item, status: nextStatus } : item);
+      state.members = memberCountsFromUsers(state.users);
+      saveState();
+      render();
+      showToast(nextStatus === "aktiv" ? "Nutzer aktiviert." : "Nutzer gesperrt.");
+    } catch (error) {
+      reportRemoteIssue(error);
+    }
   }
 });
 

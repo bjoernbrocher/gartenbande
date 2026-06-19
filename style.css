@@ -32,6 +32,7 @@ body {
     linear-gradient(145deg, #f8efd2, #e8f3dd 48%, #d9eef3);
   background-size: 28px 28px, 28px 28px, auto, auto;
   -webkit-font-smoothing: antialiased;
+  animation: gardenLight 18s ease-in-out infinite alternate;
 }
 
 button,
@@ -44,6 +45,11 @@ textarea {
 button {
   color: inherit;
   cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, opacity 180ms ease;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 .hidden {
@@ -106,6 +112,7 @@ button {
   background: var(--paper);
   box-shadow: var(--shadow);
   font-weight: 900;
+  animation: weatherBob 7s ease-in-out infinite;
 }
 
 .weather-badge:disabled {
@@ -114,6 +121,7 @@ button {
 
 .weather-badge span {
   font-size: 1.25rem;
+  animation: softPulse 4.8s ease-in-out infinite;
 }
 
 .weather-badge strong {
@@ -381,6 +389,12 @@ h2 {
   text-align: left;
   background: rgba(255, 249, 232, 0.82);
   box-shadow: 0 10px 20px rgba(33, 50, 35, 0.13);
+  animation: sproutIn 420ms ease both;
+}
+
+.home-avatar-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(33, 50, 35, 0.16);
 }
 
 .home-avatar-emoji {
@@ -391,6 +405,7 @@ h2 {
   border-radius: 50%;
   background: rgba(222, 239, 194, 0.86);
   font-size: 1.35rem;
+  animation: sproutPulse 5.2s ease-in-out infinite;
 }
 
 .home-avatar-text {
@@ -584,6 +599,7 @@ h2 {
     radial-gradient(circle at 18% 20%, rgba(255, 211, 77, 0.34), transparent 28%),
     radial-gradient(circle at 82% 18%, rgba(155, 217, 244, 0.38), transparent 26%),
     linear-gradient(180deg, rgba(255, 249, 232, 0.92), rgba(232, 243, 221, 0.88) 45%, rgba(127, 198, 111, 0.44));
+  animation: gardenStageIn 460ms ease both, gardenGlow 14s ease-in-out infinite alternate;
 }
 
 .garden-stage::before,
@@ -595,6 +611,7 @@ h2 {
   position: relative;
   inset: auto;
   margin-bottom: 12px;
+  animation: liftIn 360ms ease both;
 }
 
 .garden-map {
@@ -629,7 +646,22 @@ h2 {
   text-align: center;
   background: rgba(255, 249, 232, 0.72);
   box-shadow: 0 10px 20px rgba(33, 50, 35, 0.13);
-  transform: none;
+  transform: translateY(0);
+  animation: tileBloom 520ms ease both;
+  animation-delay: calc(var(--place-order, 0) * 70ms);
+}
+
+.garden-place:nth-child(1) { --place-order: 1; }
+.garden-place:nth-child(2) { --place-order: 2; }
+.garden-place:nth-child(3) { --place-order: 3; }
+.garden-place:nth-child(4) { --place-order: 4; }
+.garden-place:nth-child(5) { --place-order: 5; }
+.garden-place:nth-child(6) { --place-order: 6; }
+.garden-place:nth-child(7) { --place-order: 7; }
+.garden-place:nth-child(8) { --place-order: 8; }
+
+.garden-place:hover {
+  box-shadow: 0 16px 28px rgba(33, 50, 35, 0.17);
 }
 
 .garden-place img {
@@ -641,6 +673,13 @@ h2 {
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 10px 22px rgba(33, 50, 35, 0.16);
+  transition: transform 240ms ease, filter 240ms ease;
+  animation: placeSway 8s ease-in-out infinite;
+  animation-delay: calc(var(--place-order, 0) * -630ms);
+}
+
+.garden-place:hover img {
+  transform: translateY(-2px) scale(1.035);
 }
 
 .garden-place strong {
@@ -670,6 +709,7 @@ h2 {
 .garden-place.locked {
   filter: grayscale(0.96);
   opacity: 0.56;
+  animation-name: tileBloom;
 }
 
 .garden-place.locked::after {
@@ -697,6 +737,11 @@ h2 {
   justify-content: center;
   margin-top: 12px;
   transform: none;
+  animation: helpBreath 5.5s ease-in-out infinite;
+}
+
+.garden-question:hover {
+  box-shadow: 0 18px 34px rgba(33, 50, 35, 0.38);
 }
 
 .alert-strip,
@@ -1052,6 +1097,11 @@ h2 {
   font-weight: 900;
 }
 
+.primary-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(200, 95, 49, 0.24);
+}
+
 .small-action,
 .danger-action {
   min-height: 38px;
@@ -1204,6 +1254,7 @@ h2 {
   background:
     radial-gradient(circle at 18% 72%, rgba(255, 211, 77, 0.36), transparent 22%),
     rgba(255, 249, 232, 0.9);
+  animation: sproutIn 360ms ease both;
 }
 
 .avatar-top {
@@ -1221,6 +1272,7 @@ h2 {
   border-radius: 50%;
   background: rgba(127, 198, 111, 0.22);
   font-size: 1.8rem;
+  animation: sproutPulse 5.2s ease-in-out infinite;
 }
 
 .avatar-card p {
@@ -1245,6 +1297,7 @@ h2 {
   border-radius: var(--radius);
   background: rgba(33, 50, 35, 0.06);
   font-size: 1.45rem;
+  animation: plantRowGrow 680ms ease both;
 }
 
 .avatar-card small {
@@ -1430,6 +1483,7 @@ textarea:focus {
 .nav-item.active {
   color: var(--ink);
   background: rgba(127, 198, 111, 0.18);
+  animation: navPop 260ms ease both;
 }
 
 .toast {
@@ -1444,6 +1498,7 @@ textarea:focus {
   background: var(--ink);
   box-shadow: var(--shadow);
   transform: translateX(-50%);
+  animation: toastRise 260ms ease both;
 }
 
 body.summer {
@@ -1478,6 +1533,144 @@ body.winter {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes gardenLight {
+  from {
+    background-position: 0 0, 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 10px 6px, -8px 12px, 0 0, 0 0;
+  }
+}
+
+@keyframes gardenStageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gardenGlow {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position: -10px 4px, 12px -6px, 0 0;
+  }
+}
+
+@keyframes tileBloom {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes placeSway {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes weatherBob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes softPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sproutIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sproutPulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+}
+
+@keyframes plantRowGrow {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round 8px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 8px);
+  }
+}
+
+@keyframes helpBreath {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+@keyframes navPop {
+  0% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes toastRise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }
 

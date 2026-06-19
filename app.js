@@ -401,6 +401,7 @@ const els = {
   homeIntro: document.querySelector("#homeIntro"),
   homeIntroStrip: document.querySelector("#homeIntroStrip"),
   hideIntro: document.querySelector("#hideIntro"),
+  homeAvatarCard: document.querySelector("#homeAvatarCard"),
   momentCard: document.querySelector("#momentCard"),
   wantedCard: document.querySelector("#wantedCard"),
   introStrip: document.querySelector("#introStrip"),
@@ -892,11 +893,7 @@ function renderAvatarCard() {
   els.avatarCard.classList.toggle("hidden", !visible);
   if (!visible) return;
 
-  const { level, next, actionCount } = avatarStatus();
-  const season = currentSeason();
-  const plants = seasonalPlants[season.key] || seasonalPlants.spring;
-  const plantCount = Math.max(1, Math.min(7, actionCount || 1));
-  const plantRow = Array.from({ length: plantCount }, (_, index) => plants[index % plants.length]).join("");
+  const { level, next, actionCount, plantRow, plantCount } = avatarDisplay();
   const nextText = next ? `N\u00e4chste Freischaltung: ${next.avatar} ${next.title} (${next.unlock})` : "Alle aktuellen Gartenstufen freigeschaltet.";
 
   els.avatarCard.innerHTML = `
@@ -913,8 +910,34 @@ function renderAvatarCard() {
   `;
 }
 
+function avatarDisplay() {
+  const status = avatarStatus();
+  const season = currentSeason();
+  const plants = seasonalPlants[season.key] || seasonalPlants.spring;
+  const plantCount = Math.max(1, Math.min(7, status.actionCount || 1));
+  const plantRow = Array.from({ length: plantCount }, (_, index) => plants[index % plants.length]).join("");
+  return { ...status, plantRow, plantCount };
+}
+
+function renderHomeAvatarCard() {
+  if (!els.homeAvatarCard) return;
+  els.homeAvatarCard.classList.remove("hidden");
+
+  const { level, next, actionCount, plantRow } = avatarDisplay();
+  const nextLabel = next ? `N\u00e4chstes Ziel: ${next.title}` : "Gartenstufen voll";
+  els.homeAvatarCard.innerHTML = `
+    <span class="home-avatar-emoji">${level.avatar}</span>
+    <span class="home-avatar-text">
+      <strong>Pflanzenstand: ${escapeHtml(level.title)}</strong>
+      <small>${plantRow} ${actionCount} ${actionCount === 1 ? "Aktion" : "Aktionen"} · ${escapeHtml(nextLabel)}</small>
+    </span>
+    <span class="home-avatar-link">Details</span>
+  `;
+}
+
 function renderHome() {
   const infoCount = state.entries.filter((entry) => entry.kind === "info").length;
+  renderHomeAvatarCard();
 
   const latestInfo = state.entries.find((entry) => entry.kind === "info");
   if (latestInfo) {
@@ -1243,6 +1266,8 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 document.querySelectorAll("[data-view-target]").forEach((button) => {
   button.addEventListener("click", () => showView(button.dataset.viewTarget));
 });
+
+els.homeAvatarCard?.addEventListener("click", () => showView("profileView"));
 
 els.moduleTiles.addEventListener("click", (event) => {
   const tile = event.target.closest(".garden-place");

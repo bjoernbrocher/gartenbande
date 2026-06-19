@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=auth2">
+  <link rel="stylesheet" href="style.css?v=avatar2">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -50,6 +50,7 @@
             <h2>Der Garten</h2>
             <span id="weatherLine" class="weather-line">Der Garten wacht langsam auf.</span>
           </div>
+          <button class="home-avatar-card hidden" id="homeAvatarCard" type="button" aria-label="Pflanzenstand ansehen"></button>
           <section class="alert-strip garden-alert" id="alertStrip"></section>
           <section class="garden-map" id="moduleTiles"></section>
           <button class="garden-question" id="quickHelp" type="button">
@@ -300,6 +301,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=auth2"></script>
+  <script src="app.js?v=avatar2"></script>
 </body>
 </html>

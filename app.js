@@ -1216,6 +1216,8 @@ function renderAdminClean() {
     </article>
   `).join("") : document.querySelector("#emptyTemplate").innerHTML;
 
+  els.adminUsers.innerHTML = users.length ? users.map(renderAdminUser).join("") : document.querySelector("#emptyTemplate").innerHTML;
+  /*
   els.adminUsers.innerHTML = users.length ? users.map((user) => `
     <div class="admin-user">
       <strong>${escapeHtml(user.name)}</strong>
@@ -1223,6 +1225,7 @@ function renderAdminClean() {
       <button class="small-action" data-toggle-user="${escapeHtml(user.id)}" type="button">${user.status === "aktiv" ? "Sperren" : "Aktivieren"}</button>
     </div>
   `).join("") : document.querySelector("#emptyTemplate").innerHTML;
+  */
 
   if (state.customChallenge?.title) {
     els.challengeForm.title.value = state.customChallenge.title;
@@ -1230,6 +1233,20 @@ function renderAdminClean() {
     els.challengeForm.endDate.value = state.customChallenge.endDate || "";
     els.challengeForm.image.value = state.customChallenge.image || "";
   }
+}
+
+function renderAdminUser(user) {
+  const isSelf = user.id === supabaseUser?.id;
+  const meta = `${user.district} · ${user.status}${user.isAdmin ? " · Admin" : ""}`;
+  return `
+    <div class="admin-user">
+      <strong>${escapeHtml(user.name)}</strong>
+      <span>${escapeHtml(meta)}</span>
+      ${isSelf
+        ? `<span class="self-admin-note">Du</span>`
+        : `<button class="small-action" data-toggle-user="${escapeHtml(user.id)}" type="button">${user.status === "aktiv" ? "Sperren" : "Aktivieren"}</button>`}
+    </div>
+  `;
 }
 
 function calculateBadges(entries) {
@@ -1402,6 +1419,10 @@ document.body.addEventListener("click", async (event) => {
   if (toggleUser) {
     const user = cleanUsers(state.users).find((item) => item.id === toggleUser.dataset.toggleUser);
     if (!user) return;
+    if (user.id === supabaseUser?.id) {
+      showToast("Du kannst dein eigenes Admin-Konto nicht sperren.");
+      return;
+    }
     const nextStatus = user.status === "aktiv" ? "gesperrt" : "aktiv";
     try {
       await updateRemoteProfileStatus(user.id, nextStatus);

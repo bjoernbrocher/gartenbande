@@ -496,6 +496,26 @@ function saveProfile() {
   localStorage.setItem(USER_KEY, JSON.stringify(profile));
 }
 
+function authRedirectUrl() {
+  if (location.protocol === "file:") return location.href;
+  return `${location.origin}/`;
+}
+
+function readableAuthError(error) {
+  const message = String(error?.message || error?.error_description || error || "").trim();
+  const lower = message.toLowerCase();
+  if (lower.includes("redirect") || lower.includes("not allowed")) {
+    return "Supabase lehnt die Weiterleitungs-Adresse ab. Bitte in Supabase die Domain als Redirect URL eintragen.";
+  }
+  if (lower.includes("rate limit") || lower.includes("too many")) {
+    return "Zu viele Anmeldeversuche. Bitte kurz warten und dann erneut probieren.";
+  }
+  if (lower.includes("smtp") || lower.includes("email")) {
+    return "Der E-Mail-Versand ist in Supabase noch nicht voll eingerichtet.";
+  }
+  return message || "Anmeldelink konnte nicht gesendet werden.";
+}
+
 function initSupabaseClient() {
   if (!globalThis.supabase?.createClient) return;
   supabaseClient = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -1410,16 +1430,17 @@ els.authForm?.addEventListener("submit", async (event) => {
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${location.origin}${location.pathname}`
+        emailRedirectTo: authRedirectUrl()
       }
     });
     if (error) throw error;
-    renderAuthStatus("Anmeldelink wurde verschickt. Bitte E-Mail oeffnen.");
+    renderAuthStatus("Anmeldelink wurde verschickt. Bitte E-Mail öffnen.");
     showToast("Anmeldelink verschickt.");
   } catch (error) {
     console.warn(error);
-    renderAuthStatus("Anmeldung konnte nicht gestartet werden.");
-    showToast("Anmeldelink konnte nicht gesendet werden.");
+    const message = readableAuthError(error);
+    renderAuthStatus(message);
+    showToast(message);
   }
 });
 

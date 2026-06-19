@@ -1388,10 +1388,15 @@ els.moduleTiles.addEventListener("click", (event) => {
 });
 
 document.body.addEventListener("click", async (event) => {
+  const closeDialog = event.target.closest("[data-close-dialog]");
   const create = event.target.closest("[data-create-kind]");
   const remove = event.target.closest("[data-delete-entry]");
   const approve = event.target.closest("[data-approve-entry]");
   const toggleUser = event.target.closest("[data-toggle-user]");
+  if (closeDialog) {
+    document.querySelector(`#${closeDialog.dataset.closeDialog}`)?.close();
+    return;
+  }
   if (create) openEntryDialog(create.dataset.createKind);
   if (remove) {
     try {

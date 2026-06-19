@@ -1,6 +1,6 @@
 const DB_KEY = "gartenbande:v2:state";
 const USER_KEY = "gartenbande:v2:user";
-const SUPABASE_URL = "https://kyjcbmwzcxbymbcuwtfw.supabase.com";
+const SUPABASE_URL = "https://kyjcbmwzcxbymbcuwtfw.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable__hA3dloiAmPSDNqknW4GlA_NFXxTF11";
 
 let supabaseClient = null;

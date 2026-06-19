@@ -54,7 +54,7 @@ const modules = [
     kind: "lend",
     code: "LH",
     title: "Leihen & Helfen",
-    short: "Werkzeug, Geraete, kleine Hilfe.",
+    short: "Werkzeug, Ger\u00e4te, kleine Hilfe.",
     color: "#9bd9f4",
     visibleAtStart: false,
     types: ["Suche", "Biete"]
@@ -101,96 +101,138 @@ const modules = [
 const gardenPlaces = [
   {
     kind: "moment",
-    code: "MB",
-    place: "Momentebeet",
+    icon: "place-icons/blumenbeet.jpg",
+    place: "Blumenbeet",
     hint: "Kleine Augenblicke aus Hemmingen",
-    x: 26,
-    y: 62,
     size: "large"
   },
   {
     kind: "plants",
-    code: "TT",
-    place: "Tauschtisch",
+    icon: "place-icons/tauschbeet.jpg",
+    place: "Tauschbeet",
     hint: "Ableger, Samen und Pflanzen",
-    x: 62,
-    y: 64,
     size: "large"
   },
   {
     kind: "info",
-    code: "GT",
+    icon: "place-icons/aushang-tor.jpg",
     place: "Aushang am Tor",
     hint: "Wichtiges und Vermisstes",
-    x: 68,
-    y: 31,
     size: "large",
     alert: true
   },
   {
     kind: "help",
-    code: "HB",
+    icon: "place-icons/helferbank.jpg",
     place: "Helferbank",
     hint: "Eine kurze Bitte reicht",
-    x: 30,
-    y: 41,
     size: "medium"
   },
   {
     kind: "lend",
-    code: "GS",
-    place: "Geraeteschuppen",
+    icon: "place-icons/geraeteschuppen.jpg",
+    place: "Ger\u00e4teschuppen",
     hint: "Werkzeug suchen oder anbieten",
-    x: 22,
-    y: 23,
     size: "medium"
   },
   {
     kind: "events",
-    code: "PG",
-    place: "Pergola-Treff",
+    icon: "place-icons/pergola.jpg",
+    place: "Pergola",
     hint: "Termine und kleine Treffen",
-    x: 76,
-    y: 51,
     size: "medium"
   },
   {
-    kind: "challenge",
-    code: "MBL",
-    place: "Monatsbluete",
-    hint: "Die ruhige Monatsidee",
-    x: 43,
-    y: 47,
-    size: "small"
-  },
-  {
-    view: "albumView",
-    code: "GR",
-    place: "Gartenjahr-Regal",
-    hint: "Sammelalbum und Abzeichen",
-    x: 40,
-    y: 82,
-    size: "small",
+    view: "moreView",
+    icon: "place-icons/vogelhaus.jpg",
+    place: "Vogelhaus",
+    hint: "Dorffunk und Ortsteile",
+    size: "medium",
     locked: true
   },
   {
-    view: "moreView",
-    code: "VH",
-    place: "Vogelhaus",
-    hint: "Dorffunk und Ortsteile",
-    x: 74,
-    y: 82,
-    size: "small",
+    view: "albumView",
+    icon: "place-icons/gartenbuch.jpg",
+    place: "Gartenbuch",
+    hint: "Sammelalbum und Abzeichen",
+    size: "medium",
     locked: true
   }
 ];
 
 const seasons = [
-  { key: "spring", name: "Fruehling", icon: "Fr" },
-  { key: "summer", name: "Sommer", icon: "So" },
-  { key: "autumn", name: "Herbst", icon: "He" },
-  { key: "winter", name: "Winter", icon: "Wi" }
+  { key: "spring", name: "Fruehling", icon: "Fr", months: [2, 3, 4] },
+  { key: "summer", name: "Sommer", icon: "So", months: [5, 6, 7] },
+  { key: "autumn", name: "Herbst", icon: "He", months: [8, 9, 10] },
+  { key: "winter", name: "Winter", icon: "Wi", months: [11, 0, 1] }
 ];
+
+const weatherCopy = {
+  sunny: {
+    icon: "☀️",
+    label: "Sonnig",
+    lines: [
+      "Heute lockt die Sonne ins Blumenbeet.",
+      "Perfektes Wetter f\u00fcr eine Runde durch den Garten.",
+      "Die Pflanzen freuen sich heute mit euch.",
+      "Ein Tag f\u00fcr die Pergola.",
+      "Heute blueht nicht nur der Garten."
+    ]
+  },
+  mixed: {
+    icon: "🌤️",
+    label: "Wechselhaft",
+    lines: [
+      "Mal Sonne, mal Wolken - wie ein echter Gartentag.",
+      "Die Natur kann sich heute nicht entscheiden.",
+      "Ein Blick zum Himmel lohnt sich heute \u00f6fter.",
+      "Zwischen Sonne und Wolken w\u00e4chst es trotzdem."
+    ]
+  },
+  rain: {
+    icon: "🌧️",
+    label: "Regen",
+    lines: [
+      "Heute trinkt der Garten zuerst.",
+      "Die Regentonnen freuen sich.",
+      "Bestes Wetter f\u00fcr Wurzeln.",
+      "Der Garten bekommt Wellness.",
+      "Heute haben die Schnecken Vorfahrt."
+    ]
+  },
+  thunder: {
+    icon: "🌩️",
+    label: "Gewitter",
+    lines: [
+      "Heute lieber vom Beet auf die Veranda.",
+      "Die Natur macht heute gro\u00dfe Ger\u00e4usche.",
+      "Schaut lieber durchs Fenster in den Garten.",
+      "Die B\u00e4ume tanzen heute etwas wilder."
+    ]
+  },
+  winter: {
+    icon: "❄️",
+    label: "Winter",
+    lines: [
+      "Der Garten macht heute Pause.",
+      "Unter der Erde wird schon der Fruehling geplant.",
+      "Heute ruhen die Beete.",
+      "Wetter f\u00fcr Tee und Gartenideen."
+    ]
+  },
+  spring: {
+    icon: "🌸",
+    label: "Fruehling",
+    lines: [
+      "Heute riecht es nach Fruehling.",
+      "Die ersten Besucher sind unterwegs.",
+      "Es w\u00e4chst wieder \u00fcberall.",
+      "Der Garten wacht langsam auf."
+    ]
+  }
+};
+
+let currentWeather = null;
 
 const monthlyChallenges = {
   2: ["Erste Bluete", "Zeig die erste Bluete, die dir in Hemmingen auffaellt."],
@@ -204,6 +246,58 @@ const monthlyChallenges = {
   11: ["Schoenster Vorgarten", "Ein winterlicher Blick vor die Haustuer."]
 };
 
+const avatarLevels = [
+  {
+    key: "new",
+    avatar: "🌱",
+    title: "Keimling",
+    unlock: "Anmeldung"
+  },
+  {
+    key: "active",
+    avatar: "🌿",
+    title: "Gartenfreund",
+    unlock: "erster Beitrag"
+  },
+  {
+    key: "helper",
+    avatar: "🤝",
+    title: "Gute Seele",
+    unlock: "erste Hilfe"
+  },
+  {
+    key: "trader",
+    avatar: "🌻",
+    title: "Ablegerpate",
+    unlock: "erster Tausch"
+  },
+  {
+    key: "watcher",
+    avatar: "🐦",
+    title: "Naturfreund",
+    unlock: "erste Sichtung"
+  },
+  {
+    key: "activist",
+    avatar: "🌳",
+    title: "Gartenpate",
+    unlock: "10 Aktionen"
+  },
+  {
+    key: "legend",
+    avatar: "🌳🏡",
+    title: "H\u00fcter der Gartenbande",
+    unlock: "langfristig aktiv"
+  }
+];
+
+const seasonalPlants = {
+  spring: ["🌱", "🌷", "🌼", "🐝"],
+  summer: ["🌿", "🌻", "🍅", "🦋"],
+  autumn: ["🍂", "🍎", "🎃", "🌾"],
+  winter: ["❄️", "🌲", "☕", "🌱"]
+};
+
 const defaultProfile = {
   id: createId(),
   name: "",
@@ -215,7 +309,6 @@ const defaultProfile = {
 };
 
 const defaultState = {
-  seasonIndex: 0,
   activeKind: "moment",
   unlocked: false,
   introHidden: false,
@@ -300,8 +393,10 @@ const defaultState = {
 
 const els = {
   avatarInitials: document.querySelector("#avatarInitials"),
-  seasonSwitch: document.querySelector("#seasonSwitch"),
-  seasonIcon: document.querySelector("#seasonIcon"),
+  weatherBadge: document.querySelector("#weatherBadge"),
+  weatherIcon: document.querySelector("#weatherIcon"),
+  weatherLabel: document.querySelector("#weatherLabel"),
+  weatherLine: document.querySelector("#weatherLine"),
   alertStrip: document.querySelector("#alertStrip"),
   homeIntro: document.querySelector("#homeIntro"),
   homeIntroStrip: document.querySelector("#homeIntroStrip"),
@@ -327,6 +422,7 @@ const els = {
   albumHero: document.querySelector("#albumHero"),
   badgeRow: document.querySelector("#badgeRow"),
   myEntries: document.querySelector("#myEntries"),
+  avatarCard: document.querySelector("#avatarCard"),
   profileForm: document.querySelector("#profileForm"),
   adminDashboard: document.querySelector("#adminDashboard"),
   moderationList: document.querySelector("#moderationList"),
@@ -647,6 +743,94 @@ function monthlyChallenge() {
   return monthlyChallenges[new Date().getMonth()] || ["Gartenmoment des Monats", "Teile einen kleinen Moment aus Hemmingen."];
 }
 
+function currentSeason() {
+  const month = new Date().getMonth();
+  return seasons.find((season) => season.months.includes(month)) || seasons[0];
+}
+
+function pickDailyLine(lines) {
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  return lines[dayIndex % lines.length];
+}
+
+function fallbackWeatherType() {
+  const season = currentSeason();
+  if (season.key === "winter") return "winter";
+  if (season.key === "spring") return "spring";
+  return "mixed";
+}
+
+function weatherTypeFromCode(code) {
+  if ([0, 1].includes(code)) return "sunny";
+  if ([2, 3, 45, 48].includes(code)) return "mixed";
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "winter";
+  if (code >= 95) return "thunder";
+  return fallbackWeatherType();
+}
+
+function activeWeatherCopy() {
+  const type = currentWeather?.type || fallbackWeatherType();
+  return weatherCopy[type] || weatherCopy.mixed;
+}
+
+async function bootWeather() {
+  try {
+    const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=52.3142&longitude=9.723&current=weather_code&timezone=Europe%2FBerlin");
+    if (!response.ok) throw new Error("weather request failed");
+    const data = await response.json();
+    currentWeather = { type: weatherTypeFromCode(Number(data?.current?.weather_code)) };
+  } catch (error) {
+    console.warn("Weather unavailable", error);
+    currentWeather = { type: fallbackWeatherType() };
+  }
+  renderSeason();
+}
+
+function myEntries() {
+  return state.entries.filter((entry) => entry.userId === profile.id);
+}
+
+function hasSightedNature(entries) {
+  return entries.some((entry) => (
+    entry.kind === "moment" &&
+    /tier|sichtung|vogel|igel|biene|insekt|katze|hund|natur/i.test(`${entry.type} ${entry.text}`)
+  ));
+}
+
+function avatarStatus() {
+  const entries = myEntries();
+  const actionCount = entries.length;
+  const firstEntry = entries.length > 0;
+  const firstHelp = entries.some((entry) => entry.kind === "help" || entry.kind === "lend");
+  const firstTrade = entries.some((entry) => entry.kind === "plants");
+  const firstSighting = hasSightedNature(entries);
+  const firstCreated = entries.length ? Math.min(...entries.map((entry) => new Date(entry.createdAt).getTime())) : Date.now();
+  const daysActive = Math.floor((Date.now() - firstCreated) / 86400000);
+
+  let level = avatarLevels[0];
+  if (firstEntry) level = avatarLevels[1];
+  if (firstHelp) level = avatarLevels[2];
+  if (firstTrade) level = avatarLevels[3];
+  if (firstSighting) level = avatarLevels[4];
+  if (actionCount >= 10) level = avatarLevels[5];
+  if (actionCount >= 30 || (actionCount >= 10 && daysActive >= 180)) level = avatarLevels[6];
+
+  const next = avatarLevels.find((item) => !isAvatarUnlocked(item.key, entries, actionCount, daysActive));
+  return { level, next, entries, actionCount };
+}
+
+function isAvatarUnlocked(key, entries, actionCount, daysActive) {
+  if (key === "new") return true;
+  if (key === "active") return actionCount >= 1;
+  if (key === "helper") return entries.some((entry) => entry.kind === "help" || entry.kind === "lend");
+  if (key === "trader") return entries.some((entry) => entry.kind === "plants");
+  if (key === "watcher") return hasSightedNature(entries);
+  if (key === "activist") return actionCount >= 10;
+  if (key === "legend") return actionCount >= 30 || (actionCount >= 10 && daysActive >= 180);
+  return false;
+}
+
 function render() {
   renderAuthStatus();
   renderProfile();
@@ -665,16 +849,48 @@ function renderProfile() {
   els.profileForm.district.value = profile.district || "Hemmingen-Westerfeld";
   els.profileForm.rulesAccepted.checked = Boolean(profile.rulesAccepted);
   els.profileForm.classList.toggle("hidden", Boolean(supabaseClient && !supabaseUser));
+  renderAvatarCard();
   if (els.adminButton) els.adminButton.classList.toggle("hidden", !profile.isAdmin);
   if (els.resetDemo) els.resetDemo.classList.toggle("hidden", Boolean(supabaseClient));
 }
 
 function renderSeason() {
-  const season = seasons[state.seasonIndex];
+  const season = currentSeason();
+  const weather = activeWeatherCopy();
   document.body.classList.remove("summer", "autumn", "winter");
   if (season.key !== "spring") document.body.classList.add(season.key);
-  if (els.seasonName) els.seasonName.textContent = season.name;
-  if (els.seasonIcon) els.seasonIcon.textContent = season.icon;
+  if (els.weatherIcon) els.weatherIcon.textContent = weather.icon;
+  if (els.weatherLabel) els.weatherLabel.textContent = weather.label;
+  const weatherLine = pickDailyLine(weather.lines);
+  if (els.weatherLine) els.weatherLine.textContent = weatherLine;
+  if (els.weatherBadge) els.weatherBadge.title = weatherLine;
+}
+
+function renderAvatarCard() {
+  if (!els.avatarCard) return;
+  const visible = !supabaseClient || Boolean(supabaseUser);
+  els.avatarCard.classList.toggle("hidden", !visible);
+  if (!visible) return;
+
+  const { level, next, actionCount } = avatarStatus();
+  const season = currentSeason();
+  const plants = seasonalPlants[season.key] || seasonalPlants.spring;
+  const plantCount = Math.max(1, Math.min(7, actionCount || 1));
+  const plantRow = Array.from({ length: plantCount }, (_, index) => plants[index % plants.length]).join("");
+  const nextText = next ? `N\u00e4chste Freischaltung: ${next.avatar} ${next.title} (${next.unlock})` : "Alle aktuellen Gartenstufen freigeschaltet.";
+
+  els.avatarCard.innerHTML = `
+    <div class="avatar-top">
+      <span class="avatar-emoji">${level.avatar}</span>
+      <div>
+        <p>Pflanzenstand</p>
+        <h3>${escapeHtml(level.title)}</h3>
+      </div>
+    </div>
+    <div class="plant-row" aria-label="${plantCount} Aktionen">${plantRow}</div>
+    <strong>${actionCount} ${actionCount === 1 ? "Aktion" : "Aktionen"} im Garten</strong>
+    <small>${escapeHtml(nextText)}</small>
+  `;
 }
 
 function renderHome() {
@@ -692,12 +908,12 @@ function renderHome() {
   els.moduleTiles.innerHTML = gardenPlaces.map((place) => {
     const module = place.kind ? getModule(place.kind) : null;
     const locked = Boolean(place.locked || (module && !module.visibleAtStart && !state.unlocked));
-    const style = `--garden-x:${place.x}%;--garden-y:${place.y}%;--place-color:${module?.color || "#f3c467"}`;
+    const style = `--place-color:${module?.color || "#f3c467"}`;
     const actionAttr = place.kind ? `data-kind="${place.kind}"` : `data-view="${place.view}"`;
     const countText = place.kind === "info" && infoCount ? ` · ${infoCount}` : "";
     return `
       <button class="garden-place ${place.size || "medium"} ${locked ? "locked" : ""} ${place.alert ? "urgent" : ""}" style="${style}" ${actionAttr} data-locked="${locked}" type="button">
-        <span>${escapeHtml(place.code)}</span>
+        <img src="${escapeHtml(place.icon)}" alt="">
         <strong>${escapeHtml(place.place)}</strong>
         <small>${escapeHtml(place.hint)}${countText}</small>
       </button>
@@ -903,7 +1119,7 @@ function renderPwaStatus() {
 
 function showView(viewId) {
   if (viewId === "adminView" && !profile.isAdmin) {
-    showToast("Der Gaertnerraum ist nur fuer Admins sichtbar.");
+    showToast("Der G\u00e4rtnerraum ist nur f\u00fcr Admins sichtbar.");
     viewId = "homeView";
   }
   document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === viewId));
@@ -1068,12 +1284,6 @@ els.quickHelp.addEventListener("click", () => {
   els.helpForm.reset();
   els.helpDistrict.value = profile.district || "Hemmingen-Westerfeld";
   if (typeof els.helpDialog.showModal === "function") els.helpDialog.showModal();
-});
-
-els.seasonSwitch.addEventListener("click", () => {
-  state.seasonIndex = (state.seasonIndex + 1) % seasons.length;
-  saveState();
-  render();
 });
 
 els.photoInput.addEventListener("change", async () => {
@@ -1274,3 +1484,4 @@ if ("serviceWorker" in navigator) {
 
 render();
 bootSupabase();
+bootWeather();

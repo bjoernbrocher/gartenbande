@@ -1,14 +1,22 @@
-const CACHE_NAME = "gartenbande-pwa-v11";
+const CACHE_NAME = "gartenbande-pwa-v16";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=account1",
-  "./app.js?v=account1",
+  "./style.css?v=icons5",
+  "./app.js?v=icons5",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/maskable-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icons/apple-touch-icon.png",
+  "./place-icons/aushang-tor.jpg",
+  "./place-icons/helferbank.jpg",
+  "./place-icons/tauschbeet.jpg",
+  "./place-icons/blumenbeet.jpg",
+  "./place-icons/geraeteschuppen.jpg",
+  "./place-icons/pergola.jpg",
+  "./place-icons/vogelhaus.jpg",
+  "./place-icons/gartenbuch.jpg"
 ];
 
 self.addEventListener("install", (event) => {

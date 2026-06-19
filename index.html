@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=account1">
+  <link rel="stylesheet" href="style.css?v=icons5">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -28,8 +28,9 @@
         <p class="microcopy">Dorfplatz Hemmingen</p>
         <h1>Gartenbande</h1>
       </div>
-      <button class="season-switch" id="seasonSwitch" type="button" aria-label="Jahreszeit wechseln">
-        <span id="seasonIcon">Fr</span>
+      <button class="weather-badge" id="weatherBadge" type="button" aria-label="Aktuelles Wetter" disabled>
+        <span id="weatherIcon">...</span>
+        <strong id="weatherLabel">Wetter</strong>
       </button>
     </header>
 
@@ -47,6 +48,7 @@
           <div class="garden-sky">
             <p>Gartenbande Hemmingen</p>
             <h2>Der Garten</h2>
+            <span id="weatherLine" class="weather-line">Der Garten wacht langsam auf.</span>
           </div>
           <section class="alert-strip garden-alert" id="alertStrip"></section>
           <section class="garden-map" id="moduleTiles"></section>
@@ -131,6 +133,7 @@
           </form>
           <button class="small-action hidden" id="signOutButton" type="button">Abmelden</button>
         </section>
+        <section class="avatar-card hidden" id="avatarCard"></section>
         <form class="profile-form hidden" id="profileForm">
           <div class="form-note">
             <p>Gartenprofil</p>
@@ -161,14 +164,14 @@
             <span>Ich teile freundlich: lokal, hilfreich, ohne Streit, ohne oeffentliche Beschuldigungen.</span>
           </label>
           <button class="primary-action" type="submit">Gartenprofil speichern</button>
-          <button class="small-action hidden" id="adminButton" data-view-target="adminView" type="button">Gaertnerraum</button>
-          <button class="small-action hidden" id="resetDemo" type="button">Demo zuruecksetzen</button>
+          <button class="small-action hidden" id="adminButton" data-view-target="adminView" type="button">G&auml;rtnerraum</button>
+          <button class="small-action hidden" id="resetDemo" type="button">Demo zur&uuml;cksetzen</button>
         </form>
       </section>
 
-      <section class="view" id="adminView" aria-label="Gaertnerraum">
+      <section class="view" id="adminView" aria-label="G&auml;rtnerraum">
         <div class="section-heading">
-          <p>Gaertnerraum</p>
+          <p>G&auml;rtnerraum</p>
           <h2>Kleines Dashboard</h2>
         </div>
         <div class="admin-dashboard" id="adminDashboard"></div>
@@ -297,6 +300,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=account1"></script>
+  <script src="app.js?v=icons5"></script>
 </body>
 </html>

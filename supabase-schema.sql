@@ -27,8 +27,28 @@ create table if not exists public.entries (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.entry_reactions (
+  id uuid primary key default gen_random_uuid(),
+  entry_id uuid not null references public.entries(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reaction text not null check (reaction in ('danke', 'gesehen', 'helfe', 'schoen')),
+  created_at timestamptz not null default now(),
+  unique(entry_id, user_id, reaction)
+);
+
+create table if not exists public.entry_comments (
+  id uuid primary key default gen_random_uuid(),
+  entry_id uuid not null references public.entries(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  user_name text not null default 'Nachbar',
+  text text not null check (char_length(text) <= 240),
+  created_at timestamptz not null default now()
+);
+
 alter table public.profiles enable row level security;
 alter table public.entries enable row level security;
+alter table public.entry_reactions enable row level security;
+alter table public.entry_comments enable row level security;
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -121,9 +141,74 @@ on public.entries for delete
 to authenticated
 using (user_id = auth.uid() or public.is_admin());
 
+drop policy if exists "entry_reactions_select_authenticated" on public.entry_reactions;
+create policy "entry_reactions_select_authenticated"
+on public.entry_reactions for select
+to authenticated
+using (
+  exists (
+    select 1 from public.entries
+    where entries.id = entry_reactions.entry_id
+    and (entries.approved or entries.user_id = auth.uid() or public.is_admin())
+  )
+);
+
+drop policy if exists "entry_reactions_insert_own" on public.entry_reactions;
+create policy "entry_reactions_insert_own"
+on public.entry_reactions for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and exists (
+    select 1 from public.entries
+    where entries.id = entry_reactions.entry_id
+    and (entries.approved or entries.user_id = auth.uid() or public.is_admin())
+  )
+);
+
+drop policy if exists "entry_reactions_delete_own_or_admin" on public.entry_reactions;
+create policy "entry_reactions_delete_own_or_admin"
+on public.entry_reactions for delete
+to authenticated
+using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "entry_comments_select_authenticated" on public.entry_comments;
+create policy "entry_comments_select_authenticated"
+on public.entry_comments for select
+to authenticated
+using (
+  exists (
+    select 1 from public.entries
+    where entries.id = entry_comments.entry_id
+    and (entries.approved or entries.user_id = auth.uid() or public.is_admin())
+  )
+);
+
+drop policy if exists "entry_comments_insert_own" on public.entry_comments;
+create policy "entry_comments_insert_own"
+on public.entry_comments for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and exists (
+    select 1 from public.entries
+    where entries.id = entry_comments.entry_id
+    and (entries.approved or entries.user_id = auth.uid() or public.is_admin())
+  )
+);
+
+drop policy if exists "entry_comments_delete_own_or_admin" on public.entry_comments;
+create policy "entry_comments_delete_own_or_admin"
+on public.entry_comments for delete
+to authenticated
+using (user_id = auth.uid() or public.is_admin());
+
 create index if not exists entries_created_at_idx on public.entries (created_at desc);
 create index if not exists entries_kind_idx on public.entries (kind);
 create index if not exists entries_district_idx on public.entries (district);
+create index if not exists entry_reactions_entry_id_idx on public.entry_reactions (entry_id);
+create index if not exists entry_comments_entry_id_idx on public.entry_comments (entry_id);
+create index if not exists entry_comments_created_at_idx on public.entry_comments (created_at);
 
 -- Nach der ersten Anmeldung kannst du dich so zum Admin machen:
 -- update public.profiles set is_admin = true where email = 'deine-mail@example.de';

@@ -315,6 +315,8 @@ const defaultState = {
   members: {},
   users: [],
   customChallenge: null,
+  reactions: [],
+  comments: [],
   entries: [
     {
       id: "seed-moment",
@@ -459,6 +461,8 @@ function normalizeState(stored) {
     ...stored,
     members: cleanMemberCounts(stored.members),
     users: cleanUsers(stored.users),
+    reactions: stored.reactions || [],
+    comments: stored.comments || [],
     entries: stored.entries.map((entry) => ({
       approved: entry.kind !== "info",
       ...entry
@@ -572,6 +576,7 @@ async function applySession(session) {
 
   await ensureRemoteProfile();
   await loadRemoteEntries();
+  await loadRemoteEntryActivity();
   await loadRemoteProfiles();
   render();
 }
@@ -667,6 +672,26 @@ async function loadRemoteEntries() {
   }
 }
 
+async function loadRemoteEntryActivity() {
+  if (!remoteReady) return;
+  try {
+    const [{ data: reactions, error: reactionsError }, { data: comments, error: commentsError }] = await Promise.all([
+      supabaseClient.from("entry_reactions").select("*"),
+      supabaseClient.from("entry_comments").select("*").order("created_at", { ascending: true })
+    ]);
+    if (reactionsError) throw reactionsError;
+    if (commentsError) throw commentsError;
+    state.reactions = (reactions || []).map(reactionFromRemote);
+    state.comments = (comments || []).map(commentFromRemote);
+    saveState();
+  } catch (error) {
+    console.warn("Entry activity unavailable", error);
+    state.reactions = state.reactions || [];
+    state.comments = state.comments || [];
+    saveState();
+  }
+}
+
 async function loadRemoteProfiles() {
   if (!remoteReady || !profile.isAdmin) {
     state.users = cleanUsers(state.users);
@@ -743,6 +768,58 @@ function entryFromRemote(row) {
     userName: row.user_name || "Nachbar",
     createdAt: row.created_at
   };
+}
+
+function reactionFromRemote(row) {
+  return {
+    id: row.id,
+    entryId: row.entry_id,
+    userId: row.user_id,
+    reaction: row.reaction,
+    createdAt: row.created_at
+  };
+}
+
+function commentFromRemote(row) {
+  return {
+    id: row.id,
+    entryId: row.entry_id,
+    userId: row.user_id,
+    userName: row.user_name || "Nachbar",
+    text: row.text || "",
+    createdAt: row.created_at
+  };
+}
+
+async function saveRemoteReaction(entryId, reaction) {
+  if (!remoteReady) return null;
+  const { data, error } = await supabaseClient
+    .from("entry_reactions")
+    .upsert({
+      entry_id: entryId,
+      user_id: supabaseUser.id,
+      reaction
+    }, { onConflict: "entry_id,user_id,reaction" })
+    .select()
+    .single();
+  if (error) throw error;
+  return reactionFromRemote(data);
+}
+
+async function saveRemoteComment(entryId, text) {
+  if (!remoteReady) return null;
+  const { data, error } = await supabaseClient
+    .from("entry_comments")
+    .insert({
+      entry_id: entryId,
+      user_id: supabaseUser.id,
+      user_name: profile.nickname || profile.name || "Nachbar",
+      text
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return commentFromRemote(data);
 }
 
 async function saveRemoteEntry(entry) {
@@ -1133,6 +1210,47 @@ function createLabel(kind) {
   }[kind] || "Eintrag erstellen";
 }
 
+const reactionOptions = [
+  { key: "schoen", label: "Schön", icon: "♥" },
+  { key: "danke", label: "Danke", icon: "🌱" },
+  { key: "gesehen", label: "Gesehen", icon: "👀" },
+  { key: "helfe", label: "Ich helfe", icon: "🤝" }
+];
+
+function reactionsForEntry(entryId) {
+  return (state.reactions || []).filter((reaction) => reaction.entryId === entryId);
+}
+
+function commentsForEntry(entryId) {
+  return (state.comments || []).filter((comment) => comment.entryId === entryId);
+}
+
+function renderEntryActivity(entry) {
+  const reactions = reactionsForEntry(entry.id);
+  const comments = commentsForEntry(entry.id);
+  return `
+    <div class="entry-actions">
+      ${reactionOptions.map((option) => {
+        const count = reactions.filter((reaction) => reaction.reaction === option.key).length;
+        const active = reactions.some((reaction) => reaction.reaction === option.key && reaction.userId === profile.id);
+        return `<button class="reaction-chip ${active ? "active" : ""}" data-react-entry="${entry.id}" data-reaction="${option.key}" type="button">${option.icon} ${option.label}${count ? ` ${count}` : ""}</button>`;
+      }).join("")}
+    </div>
+    <div class="entry-comments">
+      ${comments.length ? comments.map((comment) => `
+        <div class="entry-comment">
+          <strong>${escapeHtml(comment.userName)}</strong>
+          <span>${escapeHtml(comment.text)}</span>
+        </div>
+      `).join("") : ""}
+      <form class="comment-form" data-comment-entry="${entry.id}">
+        <input name="comment" maxlength="240" placeholder="Kurz antworten">
+        <button class="small-action" type="submit">Antwort</button>
+      </form>
+    </div>
+  `;
+}
+
 function renderEntry(entry) {
   const module = getModule(entry.kind);
   const mine = entry.userId === profile.id;
@@ -1148,6 +1266,7 @@ function renderEntry(entry) {
         <p>${escapeHtml(entry.text)}</p>
         ${entry.contact ? `<small>${escapeHtml(entry.contact)}</small>` : ""}
         <small>von ${escapeHtml(entry.userName)}</small>
+        ${renderEntryActivity(entry)}
         ${mine ? `<button class="danger-action" data-delete-entry="${entry.id}" type="button">Loeschen</button>` : ""}
       </div>
     </article>
@@ -1389,12 +1508,42 @@ els.moduleTiles.addEventListener("click", (event) => {
 
 document.body.addEventListener("click", async (event) => {
   const closeDialog = event.target.closest("[data-close-dialog]");
+  const react = event.target.closest("[data-react-entry]");
   const create = event.target.closest("[data-create-kind]");
   const remove = event.target.closest("[data-delete-entry]");
   const approve = event.target.closest("[data-approve-entry]");
   const toggleUser = event.target.closest("[data-toggle-user]");
   if (closeDialog) {
     document.querySelector(`#${closeDialog.dataset.closeDialog}`)?.close();
+    return;
+  }
+  if (react) {
+    if (requireLogin()) return;
+    const entryId = react.dataset.reactEntry;
+    const reaction = react.dataset.reaction;
+    const exists = (state.reactions || []).some((item) => item.entryId === entryId && item.userId === profile.id && item.reaction === reaction);
+    if (exists) {
+      showToast("Schon gemerkt.");
+      return;
+    }
+    const localReaction = {
+      id: createId(),
+      entryId,
+      userId: profile.id,
+      reaction,
+      createdAt: new Date().toISOString()
+    };
+    try {
+      const savedReaction = await saveRemoteReaction(entryId, reaction);
+      state.reactions.push(savedReaction || localReaction);
+      saveState();
+      render();
+    } catch (error) {
+      reportRemoteIssue(error);
+      state.reactions.push(localReaction);
+      saveState();
+      render();
+    }
     return;
   }
   if (create) openEntryDialog(create.dataset.createKind);
@@ -1440,6 +1589,39 @@ document.body.addEventListener("click", async (event) => {
     } catch (error) {
       reportRemoteIssue(error);
     }
+  }
+});
+
+document.body.addEventListener("submit", async (event) => {
+  const commentForm = event.target.closest("[data-comment-entry]");
+  if (!commentForm) return;
+  event.preventDefault();
+  if (requireLogin()) return;
+
+  const text = String(new FormData(commentForm).get("comment") || "").trim();
+  if (!text) return;
+
+  const entryId = commentForm.dataset.commentEntry;
+  const localComment = {
+    id: createId(),
+    entryId,
+    userId: profile.id,
+    userName: profile.nickname || profile.name || "Nachbar",
+    text,
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    const savedComment = await saveRemoteComment(entryId, text);
+    state.comments.push(savedComment || localComment);
+    saveState();
+    render();
+    showToast("Antwort gespeichert.");
+  } catch (error) {
+    reportRemoteIssue(error);
+    state.comments.push(localComment);
+    saveState();
+    render();
   }
 });
 

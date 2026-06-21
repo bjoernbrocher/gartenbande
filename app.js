@@ -246,6 +246,45 @@ const monthlyChallenges = {
   11: ["Schoenster Vorgarten", "Ein winterlicher Blick vor die Haustuer."]
 };
 
+const dailyChallenges = [
+  {
+    title: "Erste Tomate geerntet",
+    prompt: "Wer entdeckt heute die erste rote Tomate?",
+    icon: "🍅",
+    tree: "🍃"
+  },
+  {
+    title: "Sonnenblume über 1 m",
+    prompt: "Zeig eine Sonnenblume, die schon ordentlich Richtung Himmel will.",
+    icon: "🌻",
+    tree: "🌿"
+  },
+  {
+    title: "Schmetterling fotografiert",
+    prompt: "Ein kurzer Flügelschlag reicht. Foto teilen, fertig.",
+    icon: "🦋",
+    tree: "🌸"
+  },
+  {
+    title: "Erste Erdbeere",
+    prompt: "Rot, klein, stolz: Wer hat die erste Erdbeere?",
+    icon: "🍓",
+    tree: "🍃"
+  },
+  {
+    title: "Vogel im Garten entdeckt",
+    prompt: "Amsel, Meise, Spatz: Heute zählt jeder Besuch.",
+    icon: "🐦",
+    tree: "🌿"
+  },
+  {
+    title: "Regenbogen nach Regen",
+    prompt: "Wenn es schimmert: schnell ein Foto für den Dorfplatz.",
+    icon: "🌈",
+    tree: "🌸"
+  }
+];
+
 const avatarLevels = [
   {
     key: "new",
@@ -392,6 +431,7 @@ const els = {
   homeIntroStrip: document.querySelector("#homeIntroStrip"),
   hideIntro: document.querySelector("#hideIntro"),
   homeAvatarCard: document.querySelector("#homeAvatarCard"),
+  dailyChallengeCard: document.querySelector("#dailyChallengeCard"),
   momentCard: document.querySelector("#momentCard"),
   wantedCard: document.querySelector("#wantedCard"),
   introStrip: document.querySelector("#introStrip"),
@@ -893,6 +933,39 @@ function monthlyChallenge() {
   return monthlyChallenges[new Date().getMonth()] || ["Gartenmoment des Monats", "Teile einen kleinen Moment aus Hemmingen."];
 }
 
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function seededIndex(seed, length) {
+  let hash = 0;
+  for (const char of seed) hash = ((hash << 5) - hash) + char.charCodeAt(0);
+  return Math.abs(hash) % length;
+}
+
+function dailyChallenge(date = new Date()) {
+  const key = todayKey(date);
+  const challenge = dailyChallenges[seededIndex(key, dailyChallenges.length)];
+  return { ...challenge, key };
+}
+
+function dailyChallengeCountdown(now = new Date()) {
+  const end = new Date(now);
+  end.setHours(24, 0, 0, 0);
+  const remaining = Math.max(0, end.getTime() - now.getTime());
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} Std.`;
+}
+
+function dailyChallengeEntries(challenge = dailyChallenge()) {
+  return state.entries.filter((entry) => (
+    entry.kind === "challenge" &&
+    entry.type === challenge.title &&
+    entry.createdAt?.slice(0, 10) === challenge.key
+  ));
+}
+
 function currentSeason() {
   const month = new Date().getMonth();
   return seasons.find((season) => season.months.includes(month)) || seasons[0];
@@ -1064,9 +1137,35 @@ function renderHomeAvatarCard() {
   `;
 }
 
+function renderDailyChallenge() {
+  if (!els.dailyChallengeCard) return;
+  const challenge = dailyChallenge();
+  const entries = dailyChallengeEntries(challenge);
+  const joined = entries.some((entry) => entry.userId === profile.id);
+  const leaves = Math.max(1, Math.min(9, entries.length || 1));
+  const tree = Array.from({ length: leaves }, (_, index) => index === 0 ? "🌳" : challenge.tree).join("");
+
+  els.dailyChallengeCard.innerHTML = `
+    <div class="daily-challenge-head">
+      <span>${challenge.icon}</span>
+      <div>
+        <p>Tageschallenge · ${dailyChallengeCountdown()}</p>
+        <h3>${escapeHtml(challenge.title)}</h3>
+      </div>
+    </div>
+    <strong>${escapeHtml(challenge.prompt)}</strong>
+    <div class="community-tree" aria-label="${entries.length} Teilnahmen">${tree}</div>
+    <div class="daily-challenge-foot">
+      <small>${entries.length} ${entries.length === 1 ? "Nachbar macht" : "Nachbarn machen"} mit</small>
+      <button class="small-action" data-join-daily-challenge type="button">${joined ? "Schon dabei" : "Mitmachen"}</button>
+    </div>
+  `;
+}
+
 function renderHome() {
   const infoCount = state.entries.filter((entry) => entry.kind === "info").length;
   renderHomeAvatarCard();
+  renderDailyChallenge();
 
   const latestInfo = state.entries.find((entry) => entry.kind === "info");
   if (latestInfo) {
@@ -1206,7 +1305,7 @@ function createLabel(kind) {
     help: "Hilfe eintragen",
     info: "Info melden",
     events: "Termin eintragen",
-    challenge: "Zur Monatschallenge beitragen"
+    challenge: "Zur Challenge beitragen"
   }[kind] || "Eintrag erstellen";
 }
 
@@ -1429,6 +1528,15 @@ function openEntryDialog(kind) {
   if (typeof els.entryDialog.showModal === "function") els.entryDialog.showModal();
 }
 
+function openDailyChallengeDialog() {
+  const challenge = dailyChallenge();
+  openEntryDialog("challenge");
+  els.entryType.innerHTML = `<option>${escapeHtml(challenge.title)}</option>`;
+  els.dialogEyebrow.textContent = "Tageschallenge";
+  els.dialogTitle.textContent = challenge.title;
+  els.entryForm.text.placeholder = challenge.prompt;
+}
+
 function classifyHelp(text) {
   const normalized = text.toLowerCase();
   if (/tomate|pflanze|ableger|samen|staude|lavendel|kraeuter|kräuter|erdbeer/.test(normalized)) {
@@ -1509,6 +1617,7 @@ els.moduleTiles.addEventListener("click", (event) => {
 document.body.addEventListener("click", async (event) => {
   const closeDialog = event.target.closest("[data-close-dialog]");
   const react = event.target.closest("[data-react-entry]");
+  const joinDailyChallenge = event.target.closest("[data-join-daily-challenge]");
   const create = event.target.closest("[data-create-kind]");
   const remove = event.target.closest("[data-delete-entry]");
   const approve = event.target.closest("[data-approve-entry]");
@@ -1544,6 +1653,16 @@ document.body.addEventListener("click", async (event) => {
       saveState();
       render();
     }
+    return;
+  }
+  if (joinDailyChallenge) {
+    if (requireLogin()) return;
+    const challenge = dailyChallenge();
+    if (dailyChallengeEntries(challenge).some((entry) => entry.userId === profile.id)) {
+      showToast("Du bist heute schon im Challenge-Baum.");
+      return;
+    }
+    openDailyChallengeDialog();
     return;
   }
   if (create) openEntryDialog(create.dataset.createKind);
@@ -1839,3 +1958,4 @@ if ("serviceWorker" in navigator) {
 render();
 bootSupabase();
 bootWeather();
+setInterval(renderDailyChallenge, 60000);

@@ -442,6 +442,82 @@ h2 {
   font-weight: 900;
 }
 
+.daily-challenge {
+  display: grid;
+  gap: 9px;
+  margin: 0 0 12px;
+  border-radius: 22px;
+  padding: 12px;
+  background:
+    radial-gradient(circle at 88% 20%, rgba(255, 211, 77, 0.34), transparent 28%),
+    rgba(255, 249, 232, 0.84);
+  box-shadow: 0 12px 24px rgba(33, 50, 35, 0.14);
+  animation: sproutIn 520ms ease both;
+}
+
+.daily-challenge-head {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.daily-challenge-head > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(127, 198, 111, 0.2);
+  font-size: 1.5rem;
+  animation: sproutPulse 5.2s ease-in-out infinite;
+}
+
+.daily-challenge p,
+.daily-challenge h3,
+.daily-challenge strong,
+.daily-challenge small {
+  margin: 0;
+}
+
+.daily-challenge p {
+  color: var(--rust);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.daily-challenge h3 {
+  font-size: 1.12rem;
+  line-height: 1;
+}
+
+.daily-challenge strong,
+.daily-challenge small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.community-tree {
+  min-height: 38px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  background: rgba(33, 50, 35, 0.06);
+  font-size: 1.25rem;
+  animation: plantRowGrow 680ms ease both;
+}
+
+.daily-challenge-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .garden-alert {
   display: none;
 }

@@ -1398,6 +1398,23 @@ h2 {
   font-size: 1rem;
 }
 
+.swap-checkbox {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  border-radius: var(--radius);
+  padding: 10px;
+  color: var(--ink);
+  background: rgba(127, 198, 111, 0.14);
+  font-weight: 900;
+}
+
+.swap-checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--garden);
+}
+
 .avatar-card {
   background:
     radial-gradient(circle at 18% 72%, rgba(255, 211, 77, 0.36), transparent 22%),

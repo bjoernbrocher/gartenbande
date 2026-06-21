@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=daily1">
+  <link rel="stylesheet" href="style.css?v=swap1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -266,6 +266,11 @@
         <input name="contact" placeholder="z.B. Ich habe einen / PN / heute Abend">
       </label>
 
+      <label class="swap-checkbox hidden" id="swapCheckboxLabel">
+        <input name="alsoSwap" type="checkbox">
+        <span>Auch im Tauschbeet zeigen</span>
+      </label>
+
       <button class="primary-action" value="default" type="submit">Auf den Dorfplatz setzen</button>
     </form>
   </dialog>
@@ -302,6 +307,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=daily1"></script>
+  <script src="app.js?v=swap1"></script>
 </body>
 </html>

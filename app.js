@@ -474,6 +474,7 @@ const els = {
   entryType: document.querySelector("#entryType"),
   entryDistrict: document.querySelector("#entryDistrict"),
   contactLabel: document.querySelector("#contactLabel"),
+  swapCheckboxLabel: document.querySelector("#swapCheckboxLabel"),
   photoInput: document.querySelector("#photoInput"),
   photoDrop: document.querySelector("#photoDrop"),
   photoPreview: document.querySelector("#photoPreview"),
@@ -871,6 +872,17 @@ async function saveRemoteEntry(entry) {
     .single();
   if (error) throw error;
   return entryFromRemote(data);
+}
+
+function entryAsSwap(momentEntry) {
+  return {
+    ...momentEntry,
+    id: createId(),
+    kind: "plants",
+    type: "Biete",
+    contact: momentEntry.contact || "Aus einem Gartenmoment ins Tauschbeet gelegt.",
+    createdAt: new Date().toISOString()
+  };
 }
 
 async function updateRemoteEntry(id, values) {
@@ -1324,6 +1336,15 @@ function commentsForEntry(entryId) {
   return (state.comments || []).filter((comment) => comment.entryId === entryId);
 }
 
+function swapEntryExistsForMoment(entry) {
+  return state.entries.some((item) => (
+    item.kind === "plants" &&
+    item.userId === entry.userId &&
+    item.text === entry.text &&
+    item.imageData === entry.imageData
+  ));
+}
+
 function renderEntryActivity(entry) {
   const reactions = reactionsForEntry(entry.id);
   const comments = commentsForEntry(entry.id);
@@ -1366,6 +1387,7 @@ function renderEntry(entry) {
         ${entry.contact ? `<small>${escapeHtml(entry.contact)}</small>` : ""}
         <small>von ${escapeHtml(entry.userName)}</small>
         ${renderEntryActivity(entry)}
+        ${mine && entry.kind === "moment" && !swapEntryExistsForMoment(entry) ? `<button class="small-action" data-move-to-swap="${entry.id}" type="button">Ins Tauschbeet</button>` : ""}
         ${mine ? `<button class="danger-action" data-delete-entry="${entry.id}" type="button">Loeschen</button>` : ""}
       </div>
     </article>
@@ -1522,6 +1544,7 @@ function openEntryDialog(kind) {
   els.entryType.innerHTML = module.types.map((type) => `<option>${escapeHtml(type)}</option>`).join("");
   els.entryDistrict.value = profile.district || "Hemmingen-Westerfeld";
   els.contactLabel.classList.toggle("hidden", kind === "moment" || kind === "challenge");
+  els.swapCheckboxLabel?.classList.toggle("hidden", kind !== "moment");
   els.photoDrop.classList.remove("has-image");
   els.photoPreview.removeAttribute("src");
   els.photoDropText.textContent = kind === "moment" || kind === "challenge" ? "Foto aufnehmen oder auswaehlen" : "Foto optional";
@@ -1618,6 +1641,7 @@ document.body.addEventListener("click", async (event) => {
   const closeDialog = event.target.closest("[data-close-dialog]");
   const react = event.target.closest("[data-react-entry]");
   const joinDailyChallenge = event.target.closest("[data-join-daily-challenge]");
+  const moveToSwap = event.target.closest("[data-move-to-swap]");
   const create = event.target.closest("[data-create-kind]");
   const remove = event.target.closest("[data-delete-entry]");
   const approve = event.target.closest("[data-approve-entry]");
@@ -1663,6 +1687,31 @@ document.body.addEventListener("click", async (event) => {
       return;
     }
     openDailyChallengeDialog();
+    return;
+  }
+  if (moveToSwap) {
+    if (requireLogin()) return;
+    const entry = state.entries.find((item) => item.id === moveToSwap.dataset.moveToSwap);
+    if (!entry || entry.userId !== profile.id || entry.kind !== "moment") return;
+    if (swapEntryExistsForMoment(entry)) {
+      showToast("Dieser Moment liegt schon im Tauschbeet.");
+      return;
+    }
+    const swapEntry = entryAsSwap(entry);
+    try {
+      const savedSwapEntry = await saveRemoteEntry(swapEntry);
+      state.entries.unshift(savedSwapEntry);
+      saveState();
+      render();
+      openModule("plants");
+      showToast("Ins Tauschbeet gelegt.");
+    } catch (error) {
+      reportRemoteIssue(error);
+      state.entries.unshift(swapEntry);
+      saveState();
+      render();
+      openModule("plants");
+    }
     return;
   }
   if (create) openEntryDialog(create.dataset.createKind);
@@ -1790,24 +1839,31 @@ els.entryForm.addEventListener("submit", async (event) => {
     userName: profile.nickname || profile.name,
     createdAt: new Date().toISOString()
   };
+  const alsoSwap = kind === "moment" && formData.get("alsoSwap") === "on";
 
   try {
     const savedEntry = await saveRemoteEntry(entry);
     state.entries.unshift(savedEntry);
+    if (alsoSwap) {
+      const swapEntry = entryAsSwap(savedEntry);
+      const savedSwapEntry = await saveRemoteEntry(swapEntry);
+      state.entries.unshift(savedSwapEntry);
+    }
     state.unlocked = true;
     saveState();
     els.entryDialog.close();
     render();
-    openModule(kind);
-    showToast("Auf den Dorfplatz gesetzt.");
+    openModule(alsoSwap ? "plants" : kind);
+    showToast(alsoSwap ? "Moment und Tauschbeet angelegt." : "Auf den Dorfplatz gesetzt.");
   } catch (error) {
     reportRemoteIssue(error);
     state.entries.unshift(entry);
+    if (alsoSwap) state.entries.unshift(entryAsSwap(entry));
     state.unlocked = true;
     saveState();
     els.entryDialog.close();
     render();
-    openModule(kind);
+    openModule(alsoSwap ? "plants" : kind);
   }
 });
 

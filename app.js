@@ -649,7 +649,7 @@ function renderAuthStatus(message = "") {
     els.signOutButton.classList.remove("hidden");
     return;
   }
-  els.authStatus.textContent = message || "Nicht angemeldet. E-Mail-Link senden.";
+  els.authStatus.textContent = message || "Einmal anmelden. Du bleibst auf diesem Gerät angemeldet.";
   els.authForm.classList.remove("hidden");
   els.signOutButton.classList.add("hidden");
 }
@@ -1951,8 +1951,8 @@ els.authForm?.addEventListener("submit", async (event) => {
       }
     });
     if (error) throw error;
-    renderAuthStatus("Anmeldelink wurde verschickt. Bitte E-Mail öffnen.");
-    showToast("Anmeldelink verschickt.");
+    renderAuthStatus("E-Mail ist unterwegs. Bitte öffnen und Gartenbande bestätigen.");
+    showToast("Zugang per E-Mail verschickt.");
   } catch (error) {
     console.warn(error);
     const message = readableAuthError(error);

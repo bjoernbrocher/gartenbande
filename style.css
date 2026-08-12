@@ -1378,6 +1378,15 @@ h2 {
   gap: 10px;
 }
 
+.auth-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
 .form-note {
   display: grid;
   gap: 4px;

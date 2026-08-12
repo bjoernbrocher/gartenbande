@@ -649,7 +649,7 @@ function renderAuthStatus(message = "") {
     els.signOutButton.classList.remove("hidden");
     return;
   }
-  els.authStatus.textContent = message || "Einmal anmelden. Du bleibst auf diesem Gerät angemeldet.";
+  els.authStatus.textContent = message || "Einmal anmelden. Öffne die E-Mail am besten auf diesem Gerät.";
   els.authForm.classList.remove("hidden");
   els.signOutButton.classList.add("hidden");
 }
@@ -1951,7 +1951,7 @@ els.authForm?.addEventListener("submit", async (event) => {
       }
     });
     if (error) throw error;
-    renderAuthStatus("E-Mail ist unterwegs. Bitte öffnen und Gartenbande bestätigen.");
+    renderAuthStatus("E-Mail ist unterwegs. Bitte auf diesem Gerät öffnen und Gartenbande bestätigen.");
     showToast("Zugang per E-Mail verschickt.");
   } catch (error) {
     console.warn(error);

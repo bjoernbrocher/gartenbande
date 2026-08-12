@@ -21,6 +21,7 @@ Digitale Dorfplatz-PWA fuer Gartenmomente, Pflanzentausch, Nachbarschaftshilfe, 
   - `entries` fuer Momente, Tauschbeet, Hilfe, Warnungen und Dorfplatz
   - `entry_reactions` fuer Reaktionen
   - `entry_comments` fuer Kommentare
+  - `village_plazas` fuer pflegbare Dorfplaetze
 
 ## Anmeldung
 - Magic-Link-Anmeldung laeuft ueber Supabase Auth.

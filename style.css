@@ -690,6 +690,41 @@ h2 {
   animation: liftIn 360ms ease both;
 }
 
+.plaza-switch {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 2px solid rgba(33, 50, 35, 0.1);
+  border-radius: var(--radius);
+  background: rgba(255, 249, 232, 0.88);
+  box-shadow: 0 12px 28px rgba(33, 50, 35, 0.08);
+}
+
+.plaza-switch p,
+.plaza-switch label {
+  margin: 0;
+  color: var(--rust);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plaza-switch strong {
+  display: block;
+  margin-top: 3px;
+  font-family: Fraunces, serif;
+  font-size: 1.35rem;
+  line-height: 1.05;
+}
+
+.plaza-switch select {
+  margin-top: 6px;
+}
+
 .garden-map {
   position: relative;
   inset: auto;
@@ -999,6 +1034,17 @@ h2 {
   padding: 10px;
   border-radius: var(--radius);
   background: rgba(33, 50, 35, 0.06);
+}
+
+.district-item {
+  width: 100%;
+  border: 0;
+  color: inherit;
+  text-align: left;
+}
+
+.district-item:hover {
+  background: rgba(127, 198, 111, 0.18);
 }
 
 .feed-item strong,
@@ -1363,6 +1409,14 @@ h2 {
 .auth-card,
 .avatar-card {
   margin-bottom: 12px;
+}
+
+.compact-form {
+  gap: 10px;
+  margin: 10px 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .auth-card p {

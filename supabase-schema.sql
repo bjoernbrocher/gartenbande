@@ -45,10 +45,20 @@ create table if not exists public.entry_comments (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.village_plazas (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  active boolean not null default true,
+  built_in boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 alter table public.profiles enable row level security;
 alter table public.entries enable row level security;
 alter table public.entry_reactions enable row level security;
 alter table public.entry_comments enable row level security;
+alter table public.village_plazas enable row level security;
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -63,6 +73,11 @@ $$;
 drop trigger if exists profiles_touch_updated_at on public.profiles;
 create trigger profiles_touch_updated_at
 before update on public.profiles
+for each row execute function public.touch_updated_at();
+
+drop trigger if exists village_plazas_touch_updated_at on public.village_plazas;
+create trigger village_plazas_touch_updated_at
+before update on public.village_plazas
 for each row execute function public.touch_updated_at();
 
 create or replace function public.is_admin()
@@ -203,12 +218,43 @@ on public.entry_comments for delete
 to authenticated
 using (user_id = auth.uid() or public.is_admin());
 
+drop policy if exists "village_plazas_select_authenticated" on public.village_plazas;
+create policy "village_plazas_select_authenticated"
+on public.village_plazas for select
+to authenticated
+using (active or public.is_admin());
+
+drop policy if exists "village_plazas_insert_admin" on public.village_plazas;
+create policy "village_plazas_insert_admin"
+on public.village_plazas for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "village_plazas_update_admin" on public.village_plazas;
+create policy "village_plazas_update_admin"
+on public.village_plazas for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+insert into public.village_plazas (name, built_in)
+values
+  ('Hemmingen-Westerfeld', true),
+  ('Hiddestorf', true),
+  ('Arnum', true),
+  ('Devese', true),
+  ('Wilkenburg', true),
+  ('Harkenbleck', true),
+  ('Ohlendorf', true)
+on conflict (name) do nothing;
+
 create index if not exists entries_created_at_idx on public.entries (created_at desc);
 create index if not exists entries_kind_idx on public.entries (kind);
 create index if not exists entries_district_idx on public.entries (district);
 create index if not exists entry_reactions_entry_id_idx on public.entry_reactions (entry_id);
 create index if not exists entry_comments_entry_id_idx on public.entry_comments (entry_id);
 create index if not exists entry_comments_created_at_idx on public.entry_comments (created_at);
+create index if not exists village_plazas_name_idx on public.village_plazas (name);
 
 -- Nach der ersten Anmeldung kannst du dich so zum Admin machen:
 -- update public.profiles set is_admin = true where email = 'deine-mail@example.de';

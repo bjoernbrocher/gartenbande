@@ -21,7 +21,7 @@ function createId() {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-const districts = [
+const defaultPlazas = [
   "Hemmingen-Westerfeld",
   "Hiddestorf",
   "Arnum",
@@ -30,6 +30,8 @@ const districts = [
   "Harkenbleck",
   "Ohlendorf"
 ];
+
+const districts = defaultPlazas;
 
 const modules = [
   {
@@ -349,6 +351,8 @@ const defaultProfile = {
 
 const defaultState = {
   activeKind: "moment",
+  activePlaza: "Hemmingen-Westerfeld",
+  plazas: defaultPlazas.map((name) => ({ id: createId(), name, active: true, builtIn: true })),
   unlocked: false,
   introHidden: false,
   members: {},
@@ -443,6 +447,8 @@ const els = {
   pwaStatus: document.querySelector("#pwaStatus"),
   installHint: document.querySelector("#installHint"),
   installButton: document.querySelector("#installButton"),
+  plazaSelect: document.querySelector("#plazaSelect"),
+  activePlazaName: document.querySelector("#activePlazaName"),
   authForm: document.querySelector("#authForm"),
   authStatus: document.querySelector("#authStatus"),
   signOutButton: document.querySelector("#signOutButton"),
@@ -459,6 +465,8 @@ const els = {
   moderationList: document.querySelector("#moderationList"),
   challengeForm: document.querySelector("#challengeForm"),
   adminUsers: document.querySelector("#adminUsers"),
+  plazaForm: document.querySelector("#plazaForm"),
+  plazaList: document.querySelector("#plazaList"),
   adminButton: document.querySelector("#adminButton"),
   resetDemo: document.querySelector("#resetDemo"),
   quickHelp: document.querySelector("#quickHelp"),
@@ -481,10 +489,12 @@ const els = {
   photoDropText: document.querySelector("#photoDropText")
 };
 
-let state = loadState();
-let profile = loadProfile();
+let state;
+let profile;
 let pendingImageData = "";
 let deferredInstallPrompt = null;
+state = loadState();
+profile = loadProfile();
 
 function loadState() {
   try {
@@ -500,6 +510,8 @@ function normalizeState(stored) {
   return {
     ...structuredClone(defaultState),
     ...stored,
+    activePlaza: stored.activePlaza || stored?.plazas?.[0]?.name || defaultState.activePlaza,
+    plazas: cleanPlazas(stored.plazas),
     members: cleanMemberCounts(stored.members),
     users: cleanUsers(stored.users),
     reactions: stored.reactions || [],
@@ -511,6 +523,61 @@ function normalizeState(stored) {
   };
 }
 
+function cleanPlazas(plazas = []) {
+  const byName = new Map();
+  [...defaultState.plazas, ...(plazas || [])].forEach((plaza) => {
+    const name = normalizePlazaName(plaza?.name || plaza);
+    if (!name) return;
+    byName.set(name.toLowerCase(), {
+      id: plaza?.id || createId(),
+      name,
+      active: plaza?.active !== false,
+      builtIn: Boolean(plaza?.builtIn)
+    });
+  });
+  return [...byName.values()].filter((plaza) => plaza.active);
+}
+
+function normalizePlazaName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ");
+}
+
+function villagePlazas() {
+  const list = cleanPlazas(globalThis.state?.plazas || state?.plazas || defaultState.plazas);
+  return list.length ? list : cleanPlazas(defaultState.plazas);
+}
+
+function plazaNames() {
+  return villagePlazas().map((plaza) => plaza.name);
+}
+
+function activePlaza() {
+  const names = plazaNames();
+  if (names.includes(state.activePlaza)) return state.activePlaza;
+  if (names.includes(profile.district)) return profile.district;
+  return names[0] || "Hemmingen-Westerfeld";
+}
+
+function setActivePlaza(name) {
+  state.activePlaza = plazaNames().includes(name) ? name : activePlaza();
+  saveState();
+}
+
+function plazaOptions(selected = activePlaza()) {
+  return plazaNames()
+    .map((name) => `<option ${name === selected ? "selected" : ""}>${escapeHtml(name)}</option>`)
+    .join("");
+}
+
+function renderPlazaControls() {
+  const current = activePlaza();
+  if (els.activePlazaName) els.activePlazaName.textContent = current;
+  if (els.plazaSelect) els.plazaSelect.innerHTML = plazaOptions(current);
+  if (els.profileForm?.district) els.profileForm.district.innerHTML = plazaOptions(profile.district || current);
+  if (els.entryDistrict) els.entryDistrict.innerHTML = plazaOptions(current);
+  if (els.helpDistrict) els.helpDistrict.innerHTML = plazaOptions(current);
+}
+
 function cleanUsers(users = []) {
   const demoNames = new Set(["Mira Gartenfreund", "Jens", "Nele"]);
   return (users || []).filter((user) => user?.id || !demoNames.has(user?.name));
@@ -518,7 +585,7 @@ function cleanUsers(users = []) {
 
 function cleanMemberCounts(members = {}) {
   const counts = {};
-  for (const district of districts) counts[district] = 0;
+  for (const district of plazaNames()) counts[district] = 0;
   return counts;
 }
 
@@ -625,10 +692,12 @@ async function applySession(session) {
   saveProfile();
 
   await ensureRemoteProfile();
+  await loadRemotePlazas();
   await loadRemoteEntries();
   await loadRemoteEntryActivity();
   await loadRemoteProfiles();
   render();
+  if (!profile.name || !profile.rulesAccepted) showView("profileView");
 }
 
 function renderAuthStatus(message = "") {
@@ -740,6 +809,48 @@ async function loadRemoteEntryActivity() {
     state.comments = state.comments || [];
     saveState();
   }
+}
+
+async function loadRemotePlazas() {
+  if (!remoteReady) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from("village_plazas")
+      .select("id,name,active,built_in")
+      .eq("active", true)
+      .order("name", { ascending: true });
+    if (error) throw error;
+    state.plazas = cleanPlazas((data || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      active: row.active,
+      builtIn: row.built_in
+    })));
+    if (!plazaNames().includes(state.activePlaza)) state.activePlaza = activePlaza();
+    saveState();
+  } catch (error) {
+    reportRemoteIssue(error);
+  }
+}
+
+async function saveRemotePlaza(plaza) {
+  if (!remoteReady || !profile.isAdmin) return plaza;
+  const { data, error } = await supabaseClient
+    .from("village_plazas")
+    .insert({
+      name: plaza.name,
+      active: true,
+      built_in: false
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    name: data.name,
+    active: data.active,
+    builtIn: data.built_in
+  };
 }
 
 async function loadRemoteProfiles() {
@@ -1077,6 +1188,7 @@ function isAvatarUnlocked(key, entries, actionCount, daysActive) {
 
 function render() {
   renderAuthStatus();
+  renderPlazaControls();
   renderProfile();
   renderSeason();
   renderHome();
@@ -1184,11 +1296,12 @@ function renderDailyChallenge() {
 }
 
 function renderHome() {
-  const infoCount = state.entries.filter((entry) => entry.kind === "info").length;
+  const entries = activePlazaEntries();
+  const infoCount = entries.filter((entry) => entry.kind === "info").length;
   renderHomeAvatarCard();
   renderDailyChallenge();
 
-  const latestInfo = state.entries.find((entry) => entry.kind === "info");
+  const latestInfo = entries.find((entry) => entry.kind === "info");
   if (latestInfo) {
     els.alertStrip.classList.add("has-alert");
     els.alertStrip.innerHTML = `<p>Nachbarschaftsinfo</p><strong>${escapeHtml(latestInfo.type)}: ${escapeHtml(latestInfo.text)}</strong>`;
@@ -1224,7 +1337,7 @@ function renderHome() {
 
 function renderMomentCard() {
   if (!els.momentCard) return;
-  const moment = state.entries.find((entry) => entry.kind === "moment");
+  const moment = activePlazaEntries().find((entry) => entry.kind === "moment");
   els.momentCard.innerHTML = moment ? `
     <p>Moment des Tages</p>
     <h2>${escapeHtml(moment.text)}</h2>
@@ -1241,8 +1354,13 @@ function entriesSince(hours) {
   return state.entries.filter((entry) => new Date(entry.createdAt).getTime() >= cutoff);
 }
 
+function activePlazaEntries() {
+  const plaza = activePlaza();
+  return state.entries.filter((entry) => (entry.district || "Hemmingen-Westerfeld") === plaza);
+}
+
 function wantedEntries() {
-  return state.entries.filter((entry) => (
+  return activePlazaEntries().filter((entry) => (
     (entry.kind === "plants" || entry.kind === "lend" || entry.kind === "help") &&
     /suche|brauche|hilfe|sitter|wer kann|benoetige|benötige/i.test(`${entry.type} ${entry.text}`)
   ));
@@ -1277,7 +1395,7 @@ function renderIntro() {
 }
 
 function renderMiniFeed() {
-  els.miniFeed.innerHTML = state.entries
+  els.miniFeed.innerHTML = activePlazaEntries()
     .slice()
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
@@ -1290,23 +1408,23 @@ function renderMiniFeed() {
 }
 
 function renderDistricts() {
-  els.districtList.innerHTML = districts.map((district) => {
+  els.districtList.innerHTML = plazaNames().map((district) => {
     const entries = state.entries.filter((entry) => entry.district === district);
     const moments = entries.filter((entry) => entry.kind === "moment").length;
     const searches = entries.filter((entry) => wantedEntries().some((wanted) => wanted.id === entry.id)).length;
     const warnings = entries.filter((entry) => entry.kind === "info").length;
     return `
-      <div class="district-item">
+      <button class="district-item" data-visit-plaza="${escapeHtml(district)}" type="button">
         <strong>${escapeHtml(district)}</strong>
         <span>${state.members?.[district] || 0} Mitglieder · ${moments} Momente · ${searches} Suchen · ${warnings} Warnungen</span>
-      </div>
+      </button>
     `;
   }).join("");
 }
 
 function renderModule() {
   const module = getModule(state.activeKind);
-  const entries = state.entries
+  const entries = activePlazaEntries()
     .filter((entry) => entry.kind === module.kind)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -1466,6 +1584,7 @@ function renderAdminClean() {
   `).join("") : document.querySelector("#emptyTemplate").innerHTML;
 
   els.adminUsers.innerHTML = users.length ? users.map(renderAdminUser).join("") : document.querySelector("#emptyTemplate").innerHTML;
+  renderPlazaAdmin();
   /*
   els.adminUsers.innerHTML = users.length ? users.map((user) => `
     <div class="admin-user">
@@ -1482,6 +1601,21 @@ function renderAdminClean() {
     els.challengeForm.endDate.value = state.customChallenge.endDate || "";
     els.challengeForm.image.value = state.customChallenge.image || "";
   }
+}
+
+function renderPlazaAdmin() {
+  if (!els.plazaList) return;
+  const plazas = villagePlazas();
+  els.plazaList.innerHTML = plazas.map((plaza) => {
+    const entries = state.entries.filter((entry) => entry.district === plaza.name).length;
+    const members = state.members?.[plaza.name] || 0;
+    return `
+      <div class="admin-user">
+        <strong>${escapeHtml(plaza.name)}</strong>
+        <span>${members} Mitglieder · ${entries} Einträge${plaza.builtIn ? " · Startbestand" : ""}</span>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderAdminUser(user) {
@@ -1551,7 +1685,8 @@ function openEntryDialog(kind) {
   els.dialogEyebrow.textContent = module.alert ? "Wichtige Info" : "Neuer Eintrag";
   els.dialogTitle.textContent = module.title;
   els.entryType.innerHTML = module.types.map((type) => `<option>${escapeHtml(type)}</option>`).join("");
-  els.entryDistrict.value = profile.district || "Hemmingen-Westerfeld";
+  renderPlazaControls();
+  els.entryDistrict.value = activePlaza();
   els.contactLabel.classList.toggle("hidden", kind === "moment" || kind === "challenge");
   els.swapCheckboxLabel?.classList.toggle("hidden", kind !== "moment");
   els.photoDrop.classList.remove("has-image");
@@ -1635,6 +1770,12 @@ document.querySelectorAll("[data-view-target]").forEach((button) => {
 
 els.homeAvatarCard?.addEventListener("click", () => showView("profileView"));
 
+els.plazaSelect?.addEventListener("change", (event) => {
+  setActivePlaza(event.target.value);
+  render();
+  showToast(`Du besuchst jetzt ${event.target.value}.`);
+});
+
 els.moduleTiles.addEventListener("click", (event) => {
   const tile = event.target.closest(".garden-place");
   if (!tile) return;
@@ -1644,6 +1785,38 @@ els.moduleTiles.addEventListener("click", (event) => {
   }
   if (tile.dataset.kind) openModule(tile.dataset.kind);
   if (tile.dataset.view) showView(tile.dataset.view);
+});
+
+els.districtList?.addEventListener("click", (event) => {
+  const plazaButton = event.target.closest("[data-visit-plaza]");
+  if (!plazaButton) return;
+  setActivePlaza(plazaButton.dataset.visitPlaza);
+  render();
+  showView("homeView");
+  showToast(`Dorfplatz ${plazaButton.dataset.visitPlaza} geöffnet.`);
+});
+
+els.plazaForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = normalizePlazaName(new FormData(els.plazaForm).get("name"));
+  if (!name) return;
+  if (plazaNames().some((existing) => existing.toLowerCase() === name.toLowerCase())) {
+    showToast("Diesen Dorfplatz gibt es schon.");
+    return;
+  }
+  const plaza = { id: createId(), name, active: true, builtIn: false };
+  try {
+    const savedPlaza = await saveRemotePlaza(plaza);
+    state.plazas = cleanPlazas([...villagePlazas(), savedPlaza]);
+  } catch (error) {
+    reportRemoteIssue(error);
+    state.plazas = cleanPlazas([...villagePlazas(), plaza]);
+  }
+  setActivePlaza(name);
+  saveState();
+  els.plazaForm.reset();
+  render();
+  showToast("Dorfplatz hinzugefügt.");
 });
 
 document.body.addEventListener("click", async (event) => {
@@ -1812,7 +1985,8 @@ els.hideIntro.addEventListener("click", () => {
 els.quickHelp.addEventListener("click", () => {
   if (requireLogin()) return;
   els.helpForm.reset();
-  els.helpDistrict.value = profile.district || "Hemmingen-Westerfeld";
+  renderPlazaControls();
+  els.helpDistrict.value = activePlaza();
   if (typeof els.helpDialog.showModal === "function") els.helpDialog.showModal();
 });
 
@@ -1928,6 +2102,7 @@ els.profileForm.addEventListener("submit", async (event) => {
     rulesAccepted: formData.get("rulesAccepted") === "on"
   };
   saveProfile();
+  setActivePlaza(profile.district);
   await ensureRemoteProfile();
   render();
   showView("homeView");

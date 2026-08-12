@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=swap1">
+  <link rel="stylesheet" href="style.css?v=plaza1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -50,6 +50,16 @@
             <h2>Der Garten</h2>
             <span id="weatherLine" class="weather-line">Der Garten wacht langsam auf.</span>
           </div>
+          <section class="plaza-switch" aria-label="Dorfplatz wechseln">
+            <div>
+              <p>Du besuchst</p>
+              <strong id="activePlazaName">Hemmingen-Westerfeld</strong>
+            </div>
+            <label>
+              Dorfplatz
+              <select id="plazaSelect" aria-label="Dorfplatz besuchen"></select>
+            </label>
+          </section>
           <button class="home-avatar-card hidden" id="homeAvatarCard" type="button" aria-label="Pflanzenstand ansehen"></button>
           <section class="daily-challenge" id="dailyChallengeCard"></section>
           <section class="alert-strip garden-alert" id="alertStrip"></section>
@@ -151,15 +161,8 @@
             <input name="nickname">
           </label>
           <label>
-            Ortsteil
+            Heimat-Dorfplatz
             <select name="district">
-              <option>Hemmingen-Westerfeld</option>
-              <option>Hiddestorf</option>
-              <option>Arnum</option>
-              <option>Devese</option>
-              <option>Wilkenburg</option>
-              <option>Harkenbleck</option>
-              <option>Ohlendorf</option>
             </select>
           </label>
           <label class="rules-check">
@@ -208,6 +211,18 @@
           </form>
         </div>
         <div class="admin-panel">
+          <h3>Dorfplätze</h3>
+          <p>Hier pflegst du die Dorfplätze. Nutzer wählen einen Heimat-Dorfplatz, können aber alle Dorfplätze besuchen.</p>
+          <form class="profile-form compact-form" id="plazaForm">
+            <label>
+              Neuer Dorfplatz
+              <input name="name" placeholder="z.B. Pattensen-Mitte" required>
+            </label>
+            <button class="primary-action" type="submit">Dorfplatz hinzufügen</button>
+          </form>
+          <div class="admin-users" id="plazaList"></div>
+        </div>
+        <div class="admin-panel">
           <h3>Nutzer</h3>
           <div class="admin-users" id="adminUsers"></div>
         </div>
@@ -249,17 +264,10 @@
           <select name="type" id="entryType"></select>
         </label>
         <label>
-          Ortsteil
-          <select name="district" id="entryDistrict">
-            <option>Hemmingen-Westerfeld</option>
-            <option>Hiddestorf</option>
-            <option>Arnum</option>
-            <option>Devese</option>
-            <option>Wilkenburg</option>
-            <option>Harkenbleck</option>
-            <option>Ohlendorf</option>
-          </select>
-        </label>
+        Dorfplatz
+        <select name="district" id="entryDistrict">
+        </select>
+      </label>
       </div>
 
       <label id="contactLabel">
@@ -286,15 +294,8 @@
         <textarea name="text" maxlength="180" placeholder="Brauche Samstag einen Haecksler." required></textarea>
       </label>
       <label>
-        Ortsteil
+        Dorfplatz
         <select name="district" id="helpDistrict">
-          <option>Hemmingen-Westerfeld</option>
-          <option>Hiddestorf</option>
-          <option>Arnum</option>
-          <option>Devese</option>
-          <option>Wilkenburg</option>
-          <option>Harkenbleck</option>
-          <option>Ohlendorf</option>
         </select>
       </label>
       <button class="primary-action" value="default" type="submit">Einordnen und senden</button>
@@ -308,6 +309,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=swap1"></script>
+  <script src="app.js?v=plaza1"></script>
 </body>
 </html>

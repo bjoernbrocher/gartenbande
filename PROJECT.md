@@ -6,7 +6,7 @@ Digitale Dorfplatz-PWA fuer Gartenmomente, Pflanzentausch, Nachbarschaftshilfe, 
 ## Fester Projektkontext
 - Lokaler Ordner: `D:\0000 DATEN\OneDrive\Dokumente\Gartenbande Hemmingen`
 - GitHub-Repo: `https://github.com/bjoernbrocher/gartenbande.git`
-- Standard-Branch: `master`
+- Standard-Branch: `main`
 - Live-Domain: `gartenbande.brocher-online.de`
 - Vercel-Projekt: Gartenbande-Projekt bei Vercel
 - Supabase-Projekt: `https://kyjcbmwzcxbymbcuwtfw.supabase.co`
@@ -41,7 +41,7 @@ http://127.0.0.1:4173/index.html
 3. Nur Gartenbande-Dateien aendern.
 4. Lokal testen.
 5. Commit erstellen.
-6. Push nach `origin master`.
+6. Push nach `origin main`.
 7. Vercel-Deployment pruefen.
 
 ## Trennregel

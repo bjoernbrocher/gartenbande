@@ -22,6 +22,11 @@ Digitale Dorfplatz-PWA fuer Gartenmomente, Pflanzentausch, Nachbarschaftshilfe, 
   - `entry_reactions` fuer Reaktionen
   - `entry_comments` fuer Kommentare
 
+## Anmeldung
+- Magic-Link-Anmeldung laeuft ueber Supabase Auth.
+- Die Projekt-URL in `app.js` muss exakt der Supabase Project URL aus `Project Settings > API` entsprechen.
+- Wenn beim Anmeldelink ein Netzwerkfehler erscheint, zuerst DNS/Erreichbarkeit der Supabase Project URL pruefen.
+
 ## Lokaler Start
 Statischen Server im Projektordner starten, zum Beispiel:
 

@@ -549,6 +549,15 @@ function authRedirectUrl() {
 function readableAuthError(error) {
   const message = String(error?.message || error?.error_description || error || "").trim();
   const lower = message.toLowerCase();
+  if (
+    lower.includes("failed to fetch") ||
+    lower.includes("networkerror") ||
+    lower.includes("network error") ||
+    lower.includes("remotename") ||
+    lower.includes("name resolution")
+  ) {
+    return "Supabase ist nicht erreichbar. Bitte Projekt-URL in Supabase pruefen oder Netzwerk/DNS kurz spaeter erneut versuchen.";
+  }
   if (lower.includes("redirect") || lower.includes("not allowed")) {
     return "Supabase lehnt die Weiterleitungs-Adresse ab. Bitte in Supabase die Domain als Redirect URL eintragen.";
   }
